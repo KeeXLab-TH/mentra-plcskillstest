@@ -1,8 +1,36 @@
 /* Custom Utilities & Overrides for Tailwind/DaisyUI */
 
+html { font-size: 17px; } /* Scales up all Tailwind rem units */
 body {
   font-family: 'Sarabun', 'Kanit', sans-serif;
   background-color: #F8FAFC;
+  font-size: 1rem;
+}
+
+/* ===== SweetAlert2 Tailwind Fixes ===== */
+div:where(.swal2-container) button:where(.swal2-styled) {
+  font-weight: 600 !important;
+  font-family: 'Sarabun', sans-serif !important;
+  font-size: 1.1rem !important;
+  padding: 12px 24px !important;
+  border-radius: 12px !important;
+  color: white !important;
+}
+div:where(.swal2-container) button:where(.swal2-confirm) {
+  background-color: #1a5276 !important;
+}
+div:where(.swal2-container) button:where(.swal2-cancel) {
+  background-color: #e2e8f0 !important;
+  color: #475569 !important;
+}
+div:where(.swal2-container) .swal2-title {
+  font-family: 'Sarabun', sans-serif !important;
+  font-size: 1.6rem !important;
+  color: #1e293b !important;
+}
+div:where(.swal2-container) .swal2-html-container {
+  font-size: 1.2rem !important;
+  color: #475569 !important;
 }
 
 /* ===== Glassmorphism & Shapes ===== */

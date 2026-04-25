@@ -45,27 +45,19 @@
         <span class="font-bold text-primary hidden md:inline-block">แผงควบคุมผู้ดูแลระบบ <span class="text-secondary">PLC</span></span>
       </div>
     </div>
-    <div class="flex-none gap-2">
-      <span id="fbSyncStatus" class="text-xs font-bold text-green-600 mr-2"></span>
+    <div class="flex-none gap-2 flex items-center">
+      <span id="fbSyncStatus" class="text-xs font-bold text-green-600 mr-2 hidden sm:inline-block"></span>
       <button class="btn btn-sm btn-ghost btn-circle text-slate-500" onclick="adminRefreshData()" title="ดึงข้อมูลล่าสุดจาก Firebase">
         <i class="fa-solid fa-arrows-rotate"></i>
       </button>
       <a href="dashboard.html" class="btn btn-sm btn-ghost text-primary hidden sm:flex">
         <i class="fa-solid fa-user-graduate mr-1"></i> หน้านักศึกษา
       </a>
-      <div class="dropdown dropdown-end">
-        <div tabindex="0" role="button" class="btn btn-ghost rounded-btn flex items-center gap-2">
-          <div class="avatar placeholder">
-            <div class="bg-secondary text-white rounded-full w-8">
-              <i class="fa-solid fa-user-shield"></i>
-            </div>
-          </div>
-          <span class="font-semibold text-sm hidden md:block" id="navAdminName">ผู้ดูแลระบบ</span>
-        </div>
-        <ul tabindex="0" class="menu dropdown-content z-[1] p-2 shadow-lg bg-base-100 rounded-box w-52 mt-4 border border-slate-100">
-          <li><a href="dashboard.html" class="sm:hidden"><i class="fa-solid fa-user-graduate"></i> หน้านักศึกษา</a></li>
-          <li><a onclick="confirmLogout()" class="text-error"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</a></li>
-        </ul>
+      <div class="flex items-center gap-2 border-l border-slate-200 pl-2 ml-1">
+        <span class="font-semibold text-sm hidden md:block mr-2 text-primary" id="navAdminName">ผู้ดูแลระบบ</span>
+        <button class="btn btn-error btn-sm btn-outline rounded-xl" onclick="confirmLogout()">
+          <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline">ออกจากระบบ</span>
+        </button>
       </div>
     </div>
   </div>
@@ -487,8 +479,13 @@
       if (!recent.length) { tb.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-500">ไม่มีกิจกรรม</td></tr>`; return; }
       
       recent.forEach(h => {
-        const d = new Date(h.date);
-        const dateStr = `${d.getDate()} ${['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][d.getMonth()]} ${d.getFullYear()+543} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+        let dateStr = 'ไม่ระบุวันที่';
+        if (h.date) {
+          const d = new Date(h.date);
+          if (!isNaN(d.getTime())) {
+            dateStr = `${d.getDate()} ${['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][d.getMonth()]} ${d.getFullYear()+543} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+          }
+        }
         tb.innerHTML += `
           <tr>
             <td class="font-medium">${h.userName || 'ไม่ระบุ'}</td>
@@ -903,5 +900,18 @@
     showTab('overview');
     
   </script>
+  <!-- Footer -->
+  <footer class="w-full text-center py-6 px-4 text-slate-500 text-sm font-medium z-20 bg-white/80 backdrop-blur-md border-t border-slate-200 mt-12 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+    <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+      <span>&copy; 2026 Mentra Solution Co., Ltd</span>
+      <span class="hidden md:inline-block text-slate-300">|</span>
+      <div class="flex items-center gap-2">
+        <span class="text-slate-400">พัฒนาโดย</span>
+        <a href="https://keexlab-th.github.io/" target="_blank" class="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 text-primary rounded-full hover:shadow-md hover:-translate-y-0.5 hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 hover:border-blue-200 transition-all duration-300 font-bold">
+          <i class="fa-solid fa-code text-secondary"></i> ธนภูมิ แดงประดับ
+        </a>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>

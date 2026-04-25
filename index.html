@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบจำลอง ฝึกทำข้อสอบศูนย์ทดสอบมาตรฐานฝีมือแรงงาน PLC</title>
+  <title>ระบบจำลอง ฝึกทำข้อสอบมาตรฐานฝีมือแรงงาน PLC</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com/">
   <link href="./assets/fonts.css" rel="stylesheet">
@@ -28,14 +28,15 @@
     }
   </script>
 </head>
-<body class="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50 text-slate-800">
+<body class="min-h-screen flex flex-col relative overflow-x-hidden bg-slate-50 text-slate-800">
 
   <!-- Background Shapes from style.css -->
   <div class="shape-1 floating-shape"></div>
   <div class="shape-2 floating-shape"></div>
   <div class="shape-3 floating-shape"></div>
 
-  <div class="container mx-auto p-4 z-10 flex flex-col lg:flex-row items-center justify-center gap-12" data-aos="fade-up" data-aos-duration="1000">
+  <div class="flex-grow flex items-center justify-center container mx-auto p-4 z-10 w-full" data-aos="fade-up" data-aos-duration="1000">
+    <div class="flex flex-col lg:flex-row items-center justify-center gap-12 w-full max-w-5xl">
     
     <!-- Left Intro Section -->
     <div class="hidden lg:flex flex-col flex-1 text-primary max-w-lg">
@@ -43,8 +44,8 @@
         <div class="glass-card p-4 rounded-3xl inline-block mb-6 hover-lift bg-white/40 border border-white/60">
           <img src="logo.png" alt="Logo" class="h-20 object-contain drop-shadow-md">
         </div>
-        <h1 class="text-5xl font-bold mb-6 leading-tight drop-shadow-sm">ระบบจำลอง<br><span class="text-secondary">ฝึกทำข้อสอบ</span></h1>
-        <p class="text-xl opacity-90 leading-relaxed font-light border-l-4 border-secondary pl-4">ศูนย์ทดสอบมาตรฐานฝีมือแรงงาน PLC<br>พัฒนาทักษะ เตรียมพร้อมสู่ความเป็นมืออาชีพ</p>
+        <h1 class="text-5xl font-bold mb-6 leading-tight drop-shadow-sm">ระบบจำลอง (E-Testing)<br><span class="text-secondary">ฝึกทำข้อสอบ</span></h1>
+        <p class="text-xl opacity-90 leading-relaxed font-light border-l-4 border-secondary pl-4">ทดสอบมาตรฐานฝีมือแรงงาน PLC<br>พัฒนาทักษะ เตรียมพร้อมสู่ความเป็นมืออาชีพ</p>
       </div>
       
       <div class="flex items-center gap-4 text-sm font-medium opacity-75" data-aos="fade-up" data-aos-delay="400">
@@ -159,8 +160,23 @@
           </div>
         </div>
       </div>
+      </div>
     </div>
   </div>
+
+  <!-- Copyright Footer -->
+  <footer class="w-full text-center py-6 px-4 text-slate-500 text-sm font-medium z-20 bg-white/80 backdrop-blur-md border-t border-slate-200 mt-auto shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+    <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+      <span>&copy; 2026 Mentra Solution Co., Ltd</span>
+      <span class="hidden md:inline-block text-slate-300">|</span>
+      <div class="flex items-center gap-2">
+        <span class="text-slate-400">พัฒนาโดย</span>
+        <a href="https://keexlab-th.github.io/" target="_blank" class="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 text-primary rounded-full hover:shadow-md hover:-translate-y-0.5 hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 hover:border-blue-200 transition-all duration-300 font-bold">
+          <i class="fa-solid fa-code text-secondary"></i> ธนภูมิ แดงประดับ
+        </a>
+      </div>
+    </div>
+  </footer>
 
   <style>
     .animate-fade-in { animation: fadeIn 0.4s ease-in-out; }
