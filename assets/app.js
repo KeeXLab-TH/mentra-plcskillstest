@@ -277,3 +277,24 @@ function saveReports(reports) {
   localStorage.setItem('plc_reports', JSON.stringify(reports));
   fbSyncKey('plc_reports');
 }
+
+// ===== Global UI Utilities =====
+function showLoading(title = 'กำลังดำเนินการ...', text = 'กรุณารอสักครู่') {
+  if (typeof Swal !== 'undefined') {
+    Swal.fire({
+      title: title,
+      html: text,
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+  }
+}
+
+function hideLoading() {
+  if (typeof Swal !== 'undefined') {
+    Swal.close();
+  }
+}

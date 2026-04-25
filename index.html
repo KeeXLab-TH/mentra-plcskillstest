@@ -1,99 +1,144 @@
 <!DOCTYPE html>
-<!-- saved from url=(0031)https://mentra-plcskillstest.vercel.app/ -->
-<html lang="th"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
+<html lang="th" data-theme="light">
+<head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบจำลอง ฝึกทำข้อสอบศูนย์ทดสอบมาตรฐานฝีมือแรงงาน PLC</title>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com/">
   <link href="./assets/fonts.css" rel="stylesheet">
   <link rel="stylesheet" href="./assets/style.css">
+  
+  <!-- CDNs -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Sarabun', 'sans-serif'] },
+          colors: { primary: '#1a5276', secondary: '#fb923c' }
+        }
+      }
+    }
+  </script>
 </head>
-<body>
-  <div class="login-page">
-    <div class="login-left">
-      <!-- Background Shapes -->
-      <div class="shape-1 floating-shape" style="background:#fb923c;"></div>
-      <div class="shape-2 floating-shape" style="background:#60a5fa;"></div>
-      
-      <div class="login-left-content">
-        <div style="background: rgba(255,255,255,0.1); padding: 24px; border-radius: 24px; display: inline-block; margin-bottom: 32px; backdrop-filter: blur(10px);">
-          <img src="logo.png" alt="Logo" style="height: 80px; object-fit: contain;">
+<body class="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50 text-slate-800">
+
+  <!-- Background Shapes from style.css -->
+  <div class="shape-1 floating-shape"></div>
+  <div class="shape-2 floating-shape"></div>
+  <div class="shape-3 floating-shape"></div>
+
+  <div class="container mx-auto p-4 z-10 flex flex-col lg:flex-row items-center justify-center gap-12" data-aos="fade-up" data-aos-duration="1000">
+    
+    <!-- Left Intro Section -->
+    <div class="hidden lg:flex flex-col flex-1 text-primary max-w-lg">
+      <div class="mb-8" data-aos="fade-right" data-aos-delay="200">
+        <div class="glass-card p-4 rounded-3xl inline-block mb-6 hover-lift bg-white/40 border border-white/60">
+          <img src="logo.png" alt="Logo" class="h-20 object-contain drop-shadow-md">
         </div>
-        <h1 style="font-size: 2.8rem; font-weight: 700; margin-bottom: 16px; line-height: 1.2;">ระบบจำลอง<br>ฝึกทำข้อสอบ</h1>
-        <p style="font-size: 1.1rem; opacity: 0.85; line-height: 1.6;">ศูนย์ทดสอบมาตรฐานฝีมือแรงงาน PLC<br>พัฒนาทักษะ เตรียมพร้อมสู่ความเป็นมืออาชีพ</p>
+        <h1 class="text-5xl font-bold mb-6 leading-tight drop-shadow-sm">ระบบจำลอง<br><span class="text-secondary">ฝึกทำข้อสอบ</span></h1>
+        <p class="text-xl opacity-90 leading-relaxed font-light border-l-4 border-secondary pl-4">ศูนย์ทดสอบมาตรฐานฝีมือแรงงาน PLC<br>พัฒนาทักษะ เตรียมพร้อมสู่ความเป็นมืออาชีพ</p>
+      </div>
+      
+      <div class="flex items-center gap-4 text-sm font-medium opacity-75" data-aos="fade-up" data-aos-delay="400">
+        <div class="flex -space-x-2">
+          <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center border-2 border-white"><i class="fa-solid fa-user text-primary text-xs"></i></div>
+          <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center border-2 border-white"><i class="fa-solid fa-graduation-cap text-green-600 text-xs"></i></div>
+          <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center border-2 border-white"><i class="fa-solid fa-chalkboard-user text-orange-600 text-xs"></i></div>
+        </div>
+        <span>รองรับนักศึกษาและบุคคลทั่วไป</span>
       </div>
     </div>
 
-    <div class="login-right">
-      <!-- Glow effect behind the card -->
-      <div class="floating-shape" style="width: 400px; height: 400px; background: #fb923c; opacity: 0.08; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: none;"></div>
+    <!-- Right Login/Register Card -->
+    <div class="w-full max-w-md flex-none">
+      <!-- Glow effect -->
+      <div class="absolute w-96 h-96 bg-secondary opacity-10 rounded-full blur-3xl -z-10 animate-pulse"></div>
 
-      <div class="login-card">
-        <div class="login-logo">
-          <h1 style="font-size:1.6rem; color:var(--text); font-weight:700;">ยินดีต้อนรับ 👋</h1>
-          <p style="font-size:0.95rem; color:var(--text-muted); margin-top:4px;">กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ</p>
+      <div class="glass-card rounded-3xl p-8 lg:p-10 hover-lift relative overflow-hidden bg-white/80 border border-white/60">
+        
+        <div class="text-center mb-8" id="loginLogoIcon">
+          <div class="w-16 h-16 bg-white rounded-2xl mx-auto shadow-md flex items-center justify-center mb-4 lg:hidden">
+            <img src="logo.png" alt="Logo" class="w-12 h-12 object-contain">
+          </div>
+          <h2 class="text-2xl font-bold text-slate-800">ยินดีต้อนรับ <span class="wave text-2xl">👋</span></h2>
+          <p class="text-slate-500 text-sm mt-2">กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ</p>
         </div>
-        <div class="login-error" id="loginError">รหัสนักศึกษาหรือรหัสผ่านไม่ถูกต้อง</div>
 
         <!-- ===== LOGIN FORM ===== -->
-        <div id="loginSection">
+        <div id="loginSection" class="animate-fade-in">
           <form id="loginForm">
-            <div class="form-group">
-              <label class="form-label" for="studentId">ผู้ใช้</label>
-              <input class="form-control" type="text" id="studentId" placeholder="กรอกชื่อผู้ใช้" required="" autocomplete="username">
+            <div class="form-control w-full mb-4">
+              <label class="label" for="studentId"><span class="label-text font-semibold text-slate-700">ชื่อผู้ใช้</span></label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+                <input type="text" id="studentId" class="input input-bordered w-full pl-10 focus:border-primary focus:ring-1 focus:ring-primary transition-all bg-white/70" placeholder="กรอกชื่อผู้ใช้" required autocomplete="username">
+              </div>
             </div>
-            <div class="form-group">
-              <label class="form-label" for="password">รหัสผ่าน</label>
-              <input class="form-control" type="password" id="password" placeholder="กรอกรหัสผ่าน" required="" autocomplete="current-password">
+            
+            <div class="form-control w-full mb-6">
+              <label class="label" for="password"><span class="label-text font-semibold text-slate-700">รหัสผ่าน</span></label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <i class="fa-solid fa-lock"></i>
+                </div>
+                <input type="password" id="password" class="input input-bordered w-full pl-10 focus:border-primary focus:ring-1 focus:ring-primary transition-all bg-white/70" placeholder="กรอกรหัสผ่าน" required autocomplete="current-password">
+              </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg btn-block mt-8" id="loginBtn">เข้าสู่ระบบ</button>
-            <div id="syncStatus" style="text-align:center;font-size:0.85rem;color:#7f8c8d;margin-top:10px;"></div>
+
+            <button type="submit" class="btn btn-primary w-full text-white shadow-lg shadow-primary/30 border-none hover:scale-[1.02] transition-transform rounded-xl bg-gradient-to-r from-primary to-blue-800" id="loginBtn">
+              เข้าสู่ระบบ <i class="fa-solid fa-arrow-right-to-bracket ml-2"></i>
+            </button>
+            <div id="syncStatus" class="text-center text-xs text-slate-400 mt-3 hidden"></div>
           </form>
           
-          <div style="display:flex;align-items:center;gap:10px;margin:24px 0;">
-            <div style="flex:1;height:1px;background:var(--border);"></div>
-            <span style="font-size:0.85rem;color:var(--text-muted);font-weight:500;">หรือ</span>
-            <div style="flex:1;height:1px;background:var(--border);"></div>
-          </div>
+          <div class="divider text-slate-400 text-sm font-medium my-6 before:bg-slate-200 after:bg-slate-200">หรือ</div>
           
-          <button type="button" class="btn btn-outline btn-lg btn-block" onclick="showRegister()">📝 สมัครใช้งาน</button>
+          <button type="button" class="btn btn-outline btn-primary w-full border-2 rounded-xl hover:scale-[1.02] transition-transform bg-white/50 hover:bg-primary hover:text-white" onclick="showRegister()">
+            <i class="fa-solid fa-user-plus mr-2"></i> สมัครใช้งานใหม่
+          </button>
           
-          <p class="text-center mt-24" style="color:var(--text-muted);font-size:0.85rem;">
-            เข้าสู่ระบบเพื่อเริ่มทำแบบทดสอบ
-          </p>
-          <p class="text-center" style="color:#94a3b8;font-size:0.75rem;margin-top:8px;">
+          <div class="mt-8 text-center text-xs text-slate-400">
             หมายเหตุ: แบบทดสอบอ้างอิงจากประกาศคณะกรรมการส่งเสริมการพัฒนาฝีมือแรงงาน
-          </p>
+          </div>
         </div>
 
         <!-- ===== REGISTER FORM ===== -->
-        <div id="registerSection" style="display:none;">
-          <div style="font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:20px;text-align:center;">📝 สมัครใช้งานระบบ</div>
-          <div id="registerError" class="login-error" style="display:none;">เกิดข้อผิดพลาด</div>
-          <div id="registerSuccess" style="display:none;background:#ecfdf5;border:1px solid #10b981;color:#047857;border-radius:12px;padding:12px 16px;font-size:0.9rem;margin-bottom:20px;"></div>
+        <div id="registerSection" class="hidden animate-fade-in">
+          <div class="text-center mb-6">
+            <h3 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-user-plus text-secondary mr-2"></i> สมัครใช้งานระบบ</h3>
+          </div>
           
           <form id="registerForm" autocomplete="off">
-            <div class="form-group">
-              <label class="form-label" for="regName">ชื่อ-นามสกุล <span style="color:var(--danger);">*</span></label>
-              <input class="form-control" type="text" id="regName" placeholder="เช่น นายสมชาย ใจดี" maxlength="60" required="">
+            <div class="form-control w-full mb-3">
+              <label class="label py-1" for="regName"><span class="label-text font-semibold text-slate-700 text-xs">ชื่อ-นามสกุล <span class="text-red-500">*</span></span></label>
+              <input type="text" id="regName" class="input input-sm input-bordered w-full bg-white/70 focus:border-primary" placeholder="เช่น นายสมชาย ใจดี" maxlength="60" required>
             </div>
-            <div class="form-group">
-              <label class="form-label" for="regStudentId">รหัสผู้ใช้ <span style="color:var(--danger);">*</span></label>
-              <input class="form-control" type="text" id="regStudentId" placeholder="ตัวอักษรหรือตัวเลข ไม่มีช่องว่าง" maxlength="30" required="" autocomplete="off" spellcheck="false">
-              <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">ใช้ล็อกอินในภายหลัง — ห้ามซ้ำกับที่มีอยู่แล้ว</div>
+            <div class="form-control w-full mb-3">
+              <label class="label py-1" for="regStudentId"><span class="label-text font-semibold text-slate-700 text-xs">รหัสผู้ใช้ <span class="text-red-500">*</span></span></label>
+              <input type="text" id="regStudentId" class="input input-sm input-bordered w-full bg-white/70 focus:border-primary" placeholder="ตัวอักษรหรือตัวเลข ไม่มีช่องว่าง" maxlength="30" required autocomplete="off" spellcheck="false">
             </div>
-            <div class="form-group">
-              <label class="form-label" for="regPassword">รหัสผ่าน <span style="color:var(--danger);">*</span></label>
-              <input class="form-control" type="password" id="regPassword" placeholder="อย่างน้อย 6 ตัวอักษร" maxlength="50" required="" autocomplete="new-password">
+            <div class="form-control w-full mb-3">
+              <label class="label py-1" for="regPassword"><span class="label-text font-semibold text-slate-700 text-xs">รหัสผ่าน <span class="text-red-500">*</span></span></label>
+              <input type="password" id="regPassword" class="input input-sm input-bordered w-full bg-white/70 focus:border-primary" placeholder="อย่างน้อย 6 ตัวอักษร" maxlength="50" required autocomplete="new-password">
             </div>
-            <div class="form-group">
-              <label class="form-label" for="regConfirm">ยืนยันรหัสผ่าน <span style="color:var(--danger);">*</span></label>
-              <input class="form-control" type="password" id="regConfirm" placeholder="กรอกรหัสผ่านอีกครั้ง" maxlength="50" required="">
+            <div class="form-control w-full mb-3">
+              <label class="label py-1" for="regConfirm"><span class="label-text font-semibold text-slate-700 text-xs">ยืนยันรหัสผ่าน <span class="text-red-500">*</span></span></label>
+              <input type="password" id="regConfirm" class="input input-sm input-bordered w-full bg-white/70 focus:border-primary" placeholder="กรอกรหัสผ่านอีกครั้ง" maxlength="50" required>
             </div>
-            <div class="form-group">
-              <label class="form-label" for="regOccupation">ประเภทผู้ใช้ <span style="color:var(--danger);">*</span></label>
-              <select class="form-control" id="regOccupation" required="">
-                <option value="">— เลือกประเภทผู้ใช้ —</option>
+            <div class="form-control w-full mb-5">
+              <label class="label py-1" for="regOccupation"><span class="label-text font-semibold text-slate-700 text-xs">ประเภทผู้ใช้ <span class="text-red-500">*</span></span></label>
+              <select class="select select-sm select-bordered w-full bg-white/70 focus:border-primary" id="regOccupation" required>
+                <option value="" disabled selected>— เลือกประเภทผู้ใช้ —</option>
                 <option value="นักศึกษา">🎓 นักศึกษา</option>
                 <option value="นักเรียน">📚 นักเรียน</option>
                 <option value="ครู">🧑‍🏫 ครู</option>
@@ -101,16 +146,28 @@
                 <option value="บุคคลทั่วไป">👤 บุคคลทั่วไป</option>
               </select>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg btn-block mt-8" id="registerBtn">สมัครใช้งาน</button>
+            
+            <button type="submit" class="btn btn-secondary w-full text-white shadow-lg shadow-secondary/30 border-none hover:scale-[1.02] transition-transform rounded-xl bg-gradient-to-r from-secondary to-orange-600" id="registerBtn">
+              สมัครใช้งาน <i class="fa-solid fa-check ml-1"></i>
+            </button>
           </form>
           
-          <div style="text-align:center;margin-top:24px;">
-            <button type="button" class="btn btn-outline btn-block" onclick="showLogin()">← กลับหน้าเข้าสู่ระบบ</button>
+          <div class="mt-6 text-center">
+            <button type="button" class="btn btn-ghost btn-sm text-slate-500 hover:text-primary" onclick="showLogin()">
+              <i class="fa-solid fa-arrow-left mr-2"></i> กลับหน้าเข้าสู่ระบบ
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <style>
+    .animate-fade-in { animation: fadeIn 0.4s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .wave { display: inline-block; animation: wave 2.5s infinite; transform-origin: 70% 70%; }
+    @keyframes wave { 0% { transform: rotate( 0.0deg) } 10% { transform: rotate(14.0deg) } 20% { transform: rotate(-8.0deg) } 30% { transform: rotate(14.0deg) } 40% { transform: rotate(-4.0deg) } 50% { transform: rotate(10.0deg) } 60% { transform: rotate( 0.0deg) } 100% { transform: rotate( 0.0deg) } }
+  </style>
 
   <script src="./assets/questions_set1.js"></script>
   <script src="./assets/questions_set2.js"></script>
@@ -123,32 +180,30 @@
   <script src="./assets/elec_set4.js"></script>
   <script src="./assets/elec_set5.js"></script>
   <script src="./assets/app.js"></script>
+  
   <script>
+    AOS.init({ once: true });
+
     // Redirect if already logged in
     const _cur = getCurrentUser();
     if (_cur) { window.location.href = isAdmin(_cur) ? 'admin.html' : 'dashboard.html'; }
 
-    // sync Firebase ใน background — ไม่ block ปุ่ม login
-    // แต่ตอนกด Submit จะรอ sync สูงสุด 2 วินาที ก่อน login
-    const loginBtn = document.getElementById('loginBtn');
-
-    // Load custom logo
+    // Load custom logo (optional override)
     (function() {
       const logo = localStorage.getItem('plc_site_logo');
       const iconEl = document.getElementById('loginLogoIcon');
       if (logo && iconEl) {
-        iconEl.innerHTML = `<img src="${logo}" style="width:80px;height:80px;object-fit:contain;border-radius:10px;display:block;">`;
-        iconEl.style.fontSize = '0';
+        iconEl.innerHTML = `<img src="${logo}" class="h-20 object-contain mx-auto mb-4 drop-shadow-md rounded-xl bg-white/50 p-2">`;
       }
     })();
 
+    // ===== LOGIN =====
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const sid = document.getElementById('studentId').value.trim();
       const pwd = document.getElementById('password').value;
-      document.getElementById('loginError').style.display = 'none';
-      loginBtn.disabled = true;
-      loginBtn.textContent = '⏳ กำลังตรวจสอบ…';
+      
+      showLoading('กำลังตรวจสอบข้อมูล...', 'โปรดรอสักครู่ ระบบกำลังเชื่อมต่อ');
 
       // ดึง plc_users จาก Firebase โดยตรง (timeout 5s)
       await Promise.race([
@@ -156,89 +211,72 @@
         new Promise(r => setTimeout(r, 5000))
       ]).catch(() => {});
 
-      loginBtn.disabled = false;
-      loginBtn.textContent = 'เข้าสู่ระบบ';
-
       const users = getUsers();
       const user = users.find(u => u.studentId === sid && u.password === pwd);
+      
       if (user) {
         setCurrentUser(user);
-        window.location.href = isAdmin(user) ? 'admin.html' : 'dashboard.html';
+        Swal.fire({
+          icon: 'success',
+          title: 'เข้าสู่ระบบสำเร็จ',
+          text: `ยินดีต้อนรับคุณ ${user.name}`,
+          timer: 1500,
+          showConfirmButton: false
+        }).then(() => {
+          window.location.href = isAdmin(user) ? 'admin.html' : 'dashboard.html';
+        });
       } else {
-        document.getElementById('loginError').style.display = 'block';
+        hideLoading();
+        Swal.fire({
+          icon: 'error',
+          title: 'เข้าสู่ระบบล้มเหลว',
+          text: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
+          confirmButtonText: 'ลองอีกครั้ง',
+          confirmButtonColor: '#1a5276'
+        });
       }
     });
 
-    // ===== REGISTER =====
+    // ===== TOGGLE VIEWS =====
     function showRegister() {
-      document.getElementById('loginSection').style.display = 'none';
-      document.getElementById('registerSection').style.display = 'block';
-      document.getElementById('registerError').style.display = 'none';
-      document.getElementById('registerSuccess').style.display = 'none';
+      document.getElementById('loginSection').classList.add('hidden');
+      document.getElementById('registerSection').classList.remove('hidden');
       document.getElementById('registerForm').reset();
     }
     function showLogin() {
-      document.getElementById('registerSection').style.display = 'none';
-      document.getElementById('loginSection').style.display = 'block';
-      document.getElementById('loginError').style.display = 'none';
+      document.getElementById('registerSection').classList.add('hidden');
+      document.getElementById('loginSection').classList.remove('hidden');
     }
 
+    // ===== REGISTER =====
     document.getElementById('registerForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const errEl = document.getElementById('registerError');
-      const okEl  = document.getElementById('registerSuccess');
-      const registerBtn = document.getElementById('registerBtn');
-      errEl.style.display = 'none';
-      okEl.style.display  = 'none';
 
-      // ดึงค่าและ sanitize (ตัด whitespace, ห้าม HTML injection)
       const name       = document.getElementById('regName').value.trim().replace(/[<>"']/g, '');
       const studentId  = document.getElementById('regStudentId').value.trim().replace(/\s|[<>"']/g, '');
       const password   = document.getElementById('regPassword').value;
       const confirm    = document.getElementById('regConfirm').value;
       const occupation = document.getElementById('regOccupation').value;
 
-      // Validation (synchronous — ทำก่อน await)
-      if (!name || name.length < 3) {
-        errEl.textContent = 'กรุณากรอกชื่อ-นามสกุลให้ครบ (อย่างน้อย 3 ตัวอักษร)';
-        errEl.style.display = 'block'; return;
-      }
-      if (!studentId || studentId.length < 3) {
-        errEl.textContent = 'รหัสผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร และไม่มีช่องว่าง';
-        errEl.style.display = 'block'; return;
-      }
-      if (!/^[a-zA-Z0-9ก-๙._-]+$/.test(studentId)) {
-        errEl.textContent = 'รหัสผู้ใช้ใช้ได้เฉพาะ a-z, 0-9, ภาษาไทย, _ . - เท่านั้น';
-        errEl.style.display = 'block'; return;
-      }
-      if (password.length < 6) {
-        errEl.textContent = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
-        errEl.style.display = 'block'; return;
-      }
-      if (password !== confirm) {
-        errEl.textContent = 'รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน';
-        errEl.style.display = 'block'; return;
-      }
-      if (!occupation) {
-        errEl.textContent = 'กรุณาเลือกประเภทผู้ใช้';
-        errEl.style.display = 'block'; return;
-      }
+      // Validation
+      if (!name || name.length < 3) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อ-นามสกุลให้ครบ (อย่างน้อย 3 ตัวอักษร)', 'warning');
+      if (!studentId || studentId.length < 3) return Swal.fire('ข้อมูลไม่ครบ', 'รหัสผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร', 'warning');
+      if (!/^[a-zA-Z0-9ก-๙._-]+$/.test(studentId)) return Swal.fire('รูปแบบไม่ถูกต้อง', 'รหัสผู้ใช้ใช้ได้เฉพาะ a-z, 0-9, ภาษาไทย, _ . - เท่านั้น', 'warning');
+      if (password.length < 6) return Swal.fire('รหัสผ่านสั้นเกินไป', 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', 'warning');
+      if (password !== confirm) return Swal.fire('รหัสผ่านไม่ตรงกัน', 'กรุณายืนยันรหัสผ่านให้ตรงกัน', 'warning');
+      if (!occupation) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณาเลือกประเภทผู้ใช้', 'warning');
 
-      // sync ก่อนตรวจชื่อซ้ำ — สูงสุด 3 วินาที
-      registerBtn.disabled = true;
-      registerBtn.textContent = '⏳ กำลังตรวจสอบ…';
+      showLoading('กำลังตรวจสอบความถูกต้อง...', 'กรุณารอสักครู่');
+
+      // sync ก่อนตรวจชื่อซ้ำ
       await Promise.race([syncUsersFromFirebase(), new Promise(r => setTimeout(r, 3000))]);
-      registerBtn.disabled = false;
-      registerBtn.textContent = 'สมัครใช้งาน';
 
-      // ตรวจชื่อผู้ใช้ซ้ำกับข้อมูลล่าสุดจาก Firebase (null-safe)
       const users = getUsers();
       if (users.find(u => u.studentId && u.studentId.toLowerCase() === studentId.toLowerCase())) {
-        errEl.textContent = 'รหัสผู้ใช้นี้มีอยู่แล้ว กรุณาเลือกรหัสผู้ใช้อื่น';
-        errEl.style.display = 'block'; return;
+        hideLoading();
+        return Swal.fire('รหัสผู้ใช้นี้มีอยู่แล้ว', 'กรุณาเลือกรหัสผู้ใช้อื่น', 'error');
       }
 
-      // สร้าง user ใหม่
       const newUser = {
         id: 'u_' + Date.now(),
         studentId: studentId,
@@ -248,27 +286,33 @@
         occupation: occupation
       };
 
-      // บันทึก localStorage
       users.push(newUser);
       localStorage.setItem('plc_users', JSON.stringify(users));
 
-      // เขียน Firebase แบบ user ทีละคน (ไม่เขียนทับ array ทั้งหมด — ป้องกัน race condition)
-      document.getElementById('registerForm').reset();
-      registerBtn.disabled = true;
-      okEl.textContent = `✅ สมัครสำเร็จ! ยินดีต้อนรับ "${name}" — กำลังบันทึก…`;
-      okEl.style.display = 'block';
+      Swal.fire({
+        title: 'กำลังบันทึกข้อมูล...',
+        html: 'ระบบกำลังเชื่อมต่อฐานข้อมูล',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+      });
 
       await Promise.race([
         fbWrite('plc_users/' + newUser.id, newUser),
         new Promise(r => setTimeout(r, 5000))
       ]).catch(() => {});
 
-      okEl.textContent = `✅ สมัครสำเร็จ! ยินดีต้อนรับ "${name}"`;
       setCurrentUser(newUser);
-      window.location.href = 'dashboard.html';
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'สมัครสำเร็จ!',
+        text: `ยินดีต้อนรับคุณ ${name}`,
+        timer: 1500,
+        showConfirmButton: false
+      }).then(() => {
+        window.location.href = 'dashboard.html';
+      });
     });
   </script>
-
-
-  <script src="./assets/app.js"></script>
-</body></html>
+</body>
+</html>

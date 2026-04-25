@@ -1,1998 +1,148 @@
 <!DOCTYPE html>
-<!-- saved from url=(0035)https://plcskilltest.pages.dev/exam -->
-<html lang="th"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
+<html lang="th" data-theme="light">
+<head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ทำข้อสอบ - ระบบจำลอง ศูนย์ทดสอบมาตรฐานฝีมือแรงงาน PLC</title>
+  <title>ทำข้อสอบ - ระบบฝึกทำข้อสอบ PLC</title>
   <link rel="preconnect" href="https://fonts.googleapis.com/">
   <link href="./assets/fonts.css" rel="stylesheet">
   <link rel="stylesheet" href="./assets/style.css">
+  
+  <!-- CDNs -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Sarabun', 'sans-serif'] },
+          colors: { primary: '#1a5276', secondary: '#fb923c' }
+        }
+      }
+    }
+  </script>
 </head>
-<body>
-  <!-- Background Shapes -->
-  <div class="shape-1 floating-shape"></div>
-  <div class="shape-2 floating-shape"></div>
-  <!-- Confirm Submit Modal -->
-  <div class="modal-overlay hidden" id="submitModal">
-    <div class="modal-box">
-      <h3>ยืนยันการส่งข้อสอบ</h3>
-      <p id="modalMsg">คุณตอบแล้ว <strong id="answeredCount">0</strong> จาก <strong id="totalCount">0</strong> ข้อ<br>ต้องการส่งข้อสอบหรือไม่?</p>
-      <div id="unansweredWarning" style="display:none;background:#fdebd0;border:1px solid #e67e22;border-radius:8px;padding:10px 14px;margin-bottom:12px;color:#784212;font-size:0.9rem;">⚠️ ยังมีข้อที่ยังไม่ได้ตอบ กรุณาตอบให้ครบก่อนส่ง</div>
-      <div class="modal-actions">
-        <button class="btn btn-outline" onclick="closeModal()">กลับไปทำต่อ</button>
-        <button class="btn btn-primary" id="confirmSubmitBtn" onclick="submitExam()">ส่งข้อสอบ</button>
+<body class="bg-slate-50 text-slate-800 min-h-screen relative pb-32">
+  <!-- Sticky Header -->
+  <header class="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md shadow-sm z-50 border-b border-slate-200 transition-all">
+    <div class="container mx-auto px-4 h-16 flex justify-between items-center">
+      <div class="flex-1 truncate pr-4">
+        <h1 class="text-lg md:text-xl font-bold text-primary truncate" id="examTitle">กำลังโหลดชุดข้อสอบ...</h1>
+      </div>
+      <div class="flex-none flex items-center gap-4">
+        <div class="bg-slate-100 px-4 py-2 rounded-xl flex items-center gap-2 font-mono font-bold text-lg md:text-xl text-slate-700 shadow-inner" id="timerDisplayContainer">
+          <i class="fa-regular fa-clock text-primary"></i> <span id="timerDisplay">--:--</span>
+        </div>
+      </div>
+    </div>
+    <!-- Progress bar -->
+    <div class="h-1.5 w-full bg-slate-200">
+      <div class="h-full bg-secondary transition-all duration-300" id="progressFill" style="width: 0%;"></div>
+    </div>
+  </header>
+
+  <div class="container mx-auto px-4 pt-24 max-w-4xl">
+    <!-- Questions List -->
+    <div id="examBody" class="space-y-8 pb-10">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <div class="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-40 transition-transform duration-300 transform" id="examNav">
+    <div class="absolute -top-10 right-4">
+      <button class="bg-white text-slate-500 w-10 h-10 rounded-t-xl shadow-[0_-4px_10px_rgba(0,0,0,0.05)] flex items-center justify-center border border-b-0 border-slate-200" onclick="toggleNav()" id="navToggleBtn">
+        <i class="fa-solid fa-chevron-down"></i>
+      </button>
+    </div>
+    <div class="container mx-auto p-4 flex flex-col md:flex-row gap-4 justify-between items-center">
+      <!-- Question Dots (Scrollable horizontally on mobile) -->
+      <div class="flex-1 w-full overflow-x-auto pb-2 md:pb-0 hide-scrollbar" id="dotsContainer">
+        <div class="flex gap-2" id="questionDots">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+      <div class="flex-none flex gap-2 w-full md:w-auto">
+        <button class="btn btn-error btn-outline flex-1 md:flex-none rounded-xl" onclick="openCancelModal()">
+          <i class="fa-solid fa-xmark mr-1"></i> ยกเลิก
+        </button>
+        <button class="btn btn-primary flex-1 md:flex-none rounded-xl bg-gradient-to-r from-primary to-blue-800 border-none shadow-lg shadow-primary/30" onclick="openModal()">
+          <i class="fa-solid fa-paper-plane mr-1"></i> ส่งข้อสอบ
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Confirm Cancel Modal -->
-  <div class="modal-overlay hidden" id="cancelModal">
-    <div class="modal-box">
-      <h3>ยกเลิกการทดสอบ</h3>
-      <p style="color:#7f8c8d;">หากยกเลิก คะแนนจะไม่ถูกบันทึก<br>ต้องการออกจากการทดสอบหรือไม่?</p>
-      <div class="modal-actions">
-        <button class="btn btn-outline" onclick="closeCancelModal()">ทำต่อ</button>
-        <button class="btn btn-danger" onclick="cancelExam()">ยกเลิกการทดสอบ</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Report Issue Modal -->
-  <div class="modal-overlay hidden" id="reportModal">
-    <div class="modal-box" style="max-width:480px;text-align:left;">
-      <h3 style="margin-bottom:4px;">🚨 แจ้งปัญหาข้อสอบ</h3>
-      <p id="reportQLabel" style="color:#7f8c8d;font-size:0.88rem;margin-bottom:16px;"></p>
+  <!-- Report Modal (DaisyUI) -->
+  <dialog id="reportModal" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box bg-white">
+      <h3 class="font-bold text-lg text-red-600 border-b pb-2 mb-4"><i class="fa-solid fa-triangle-exclamation"></i> แจ้งปัญหาข้อสอบ</h3>
       <input type="hidden" id="reportQIndex">
-      <div class="form-group">
-        <label class="form-label">ประเภทปัญหา</label>
-        <select class="form-control" id="reportType">
-          <option value="wrong_answer">เฉลยไม่ถูกต้อง</option>
-          <option value="unclear_question">คำถามไม่ชัดเจน</option>
-          <option value="typo">ตัวสะกดผิด / โปรแกรมผิดพลาด</option>
-          <option value="image_error">รูปภาพไม่แสดง / เสียหาย</option>
+      
+      <div class="mb-4">
+        <div class="text-sm text-slate-500 mb-1">ข้อที่กำลังแจ้งปัญหา:</div>
+        <div class="p-3 bg-slate-50 rounded-lg text-sm text-slate-700 font-medium" id="reportQLabel">...</div>
+      </div>
+
+      <div class="form-control w-full mb-3">
+        <label class="label"><span class="label-text font-bold text-slate-700">ประเภทปัญหา</span></label>
+        <select class="select select-bordered w-full" id="reportType">
+          <option value="wrong_answer">เฉลยผิด / ตัวเลือกผิด</option>
+          <option value="typo">พิมพ์ผิด / อ่านไม่รู้เรื่อง</option>
+          <option value="missing_image">รูปภาพไม่ขึ้น / ไม่ชัด</option>
+          <option value="no_correct">ไม่มีคำตอบที่ถูกเลย</option>
           <option value="other">อื่นๆ</option>
         </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">รายละเอียดเพิ่มเติม <span style="color:#7f8c8d;font-weight:400;">(ไม่บังคับ)</span></label>
-        <textarea class="form-control" id="reportNote" rows="3" placeholder="อธิบายปัญหาที่พบ..."></textarea>
-      </div>
-      <div id="reportStatus" style="font-size:0.88rem;display:none;margin-bottom:8px;"></div>
-      <div class="modal-actions" style="justify-content:flex-end;">
-        <button class="btn btn-outline" onclick="closeReportModal()">ยกเลิก</button>
-        <button class="btn btn-primary" id="reportSubmitBtn" onclick="submitReport()">🚨 ส่งรายงาน</button>
-      </div>
-    </div>
-  </div>
 
-  <!-- Exam Header -->
-  <div class="exam-header" style="align-items:center;">
-    <div style="display:flex; align-items:center; gap:12px;">
-      <img src="logo.png" alt="Logo" style="height:36px; object-fit:contain; border-radius:4px; background:#fff; padding:2px;">
-      <h3 id="examTitle">หลักการควบคุมและวงจรลอจิก</h3>
-    </div>
-    <div class="exam-timer" id="timerDisplay">59:52</div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-outline btn-sm" onclick="openCancelModal()" style="color:#e74c3c;border-color:#e74c3c;">✕ ยกเลิก</button>
-      <button class="btn btn-accent" onclick="openModal()">ส่งข้อสอบ</button>
-    </div>
-  </div>
-  <div class="exam-progress-bar">
-    <div class="exam-progress-fill" id="progressFill" style="width:0%"></div>
-  </div>
-
-  <!-- Question Body -->
-  <div class="exam-body" id="examBody">
-        <div class="question-block" id="qblock0">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 1 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(0)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">วงจรใดที่เหมาะสมสำหรับการควบคุมไม่ให้มอเตอร์หมุนซ้ายและหมุนขวาพร้อมกัน?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label0_0">
-                <input type="radio" name="q0" value="0" onchange="selectAnswer(0, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>Counter circuit</span>
-              </label>
-            
-              <label class="choice-label" id="label0_1">
-                <input type="radio" name="q0" value="1" onchange="selectAnswer(0, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>Timer circuit</span>
-              </label>
-            
-              <label class="choice-label" id="label0_2">
-                <input type="radio" name="q0" value="2" onchange="selectAnswer(0, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>Interlock circuit</span>
-              </label>
-            
-              <label class="choice-label" id="label0_3">
-                <input type="radio" name="q0" value="3" onchange="selectAnswer(0, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>Self-holding circuit</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock1">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 2 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(1)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ผลลัพธ์ของประตูลอจิก NAND เมื่ออินพุตทั้งสองเป็น 1 คือ?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label1_0">
-                <input type="radio" name="q1" value="0" onchange="selectAnswer(1, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>ขึ้นอยู่กับแรงดัน</span>
-              </label>
-            
-              <label class="choice-label" id="label1_1">
-                <input type="radio" name="q1" value="1" onchange="selectAnswer(1, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>ไม่แน่นอน</span>
-              </label>
-            
-              <label class="choice-label" id="label1_2">
-                <input type="radio" name="q1" value="2" onchange="selectAnswer(1, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>1</span>
-              </label>
-            
-              <label class="choice-label" id="label1_3">
-                <input type="radio" name="q1" value="3" onchange="selectAnswer(1, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>0</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock2">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 3 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(2)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">วงจรลอจิก AND จะให้สัญญาณเอาท์พุตเป็น 1 เมื่อใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label2_0">
-                <input type="radio" name="q2" value="0" onchange="selectAnswer(2, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>เมื่ออินพุตอย่างน้อยหนึ่งตัวเป็น 0</span>
-              </label>
-            
-              <label class="choice-label" id="label2_1">
-                <input type="radio" name="q2" value="1" onchange="selectAnswer(2, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>เมื่ออินพุตทุกตัวเป็น 0</span>
-              </label>
-            
-              <label class="choice-label" id="label2_2">
-                <input type="radio" name="q2" value="2" onchange="selectAnswer(2, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>เมื่ออินพุตอย่างน้อยหนึ่งตัวเป็น 1</span>
-              </label>
-            
-              <label class="choice-label" id="label2_3">
-                <input type="radio" name="q2" value="3" onchange="selectAnswer(2, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>เมื่ออินพุตทุกตัวเป็น 1</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock3">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 4 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(3)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ใน Sequence Control เงื่อนไขของขั้นตอน (Step) แต่ละขั้นคืออะไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label3_0">
-                <input type="radio" name="q3" value="0" onchange="selectAnswer(3, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>จำนวนอุปกรณ์</span>
-              </label>
-            
-              <label class="choice-label" id="label3_1">
-                <input type="radio" name="q3" value="1" onchange="selectAnswer(3, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>ค่าแรงดันไฟฟ้า</span>
-              </label>
-            
-              <label class="choice-label" id="label3_2">
-                <input type="radio" name="q3" value="2" onchange="selectAnswer(3, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>เงื่อนไขที่ต้องเป็นจริงก่อนจะเปลี่ยนไปขั้นตอนถัดไป (Transition condition)</span>
-              </label>
-            
-              <label class="choice-label" id="label3_3">
-                <input type="radio" name="q3" value="3" onchange="selectAnswer(3, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>ขนาดของสายไฟ</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock4">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 5 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(4)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">วงจร Interlock ที่ถูกต้องระหว่าง Motor A และ Motor B คือ?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label4_0">
-                <input type="radio" name="q4" value="0" onchange="selectAnswer(4, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>นำ contact ของ A มาต่ออนุกรมกับ coil ของ A</span>
-              </label>
-            
-              <label class="choice-label" id="label4_1">
-                <input type="radio" name="q4" value="1" onchange="selectAnswer(4, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>นำ Normally Closed contact ของ A มาต่ออนุกรมกับ coil ของ B</span>
-              </label>
-            
-              <label class="choice-label" id="label4_2">
-                <input type="radio" name="q4" value="2" onchange="selectAnswer(4, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>นำ Timer contact มาต่อกับทั้ง A และ B</span>
-              </label>
-            
-              <label class="choice-label" id="label4_3">
-                <input type="radio" name="q4" value="3" onchange="selectAnswer(4, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>นำ contact ของ B มาต่อขนานกับ coil ของ A</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock5">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 6 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(5)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ประตูลอจิก NOR จะให้เอาท์พุต 1 เมื่อใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label5_0">
-                <input type="radio" name="q5" value="0" onchange="selectAnswer(5, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>เมื่ออินพุตอย่างน้อยหนึ่งตัวเป็น 1</span>
-              </label>
-            
-              <label class="choice-label" id="label5_1">
-                <input type="radio" name="q5" value="1" onchange="selectAnswer(5, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>เมื่ออินพุตทั้งหมดเป็น 0</span>
-              </label>
-            
-              <label class="choice-label" id="label5_2">
-                <input type="radio" name="q5" value="2" onchange="selectAnswer(5, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>เมื่ออินพุตทั้งหมดเป็น 1</span>
-              </label>
-            
-              <label class="choice-label" id="label5_3">
-                <input type="radio" name="q5" value="3" onchange="selectAnswer(5, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>เมื่ออินพุตอย่างน้อยหนึ่งตัวเป็น 0</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock6">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 7 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(6)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">หากต้องการให้มอเตอร์ทำงานเฉพาะเมื่อเซ็นเซอร์ทั้ง 3 ตัว ON พร้อมกัน ควรใช้วงจรลอจิกใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label6_0">
-                <input type="radio" name="q6" value="0" onchange="selectAnswer(6, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>OR gate 3 อินพุต</span>
-              </label>
-            
-              <label class="choice-label" id="label6_1">
-                <input type="radio" name="q6" value="1" onchange="selectAnswer(6, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>XOR gate</span>
-              </label>
-            
-              <label class="choice-label" id="label6_2">
-                <input type="radio" name="q6" value="2" onchange="selectAnswer(6, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>AND gate 3 อินพุต</span>
-              </label>
-            
-              <label class="choice-label" id="label6_3">
-                <input type="radio" name="q6" value="3" onchange="selectAnswer(6, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>NOT gate</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock7">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 8 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(7)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ในวงจร Self-holding contact ใดที่ใช้ล็อกการทำงาน?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label7_0">
-                <input type="radio" name="q7" value="0" onchange="selectAnswer(7, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>Timer contact ต่อขนานกับ Output coil</span>
-              </label>
-            
-              <label class="choice-label" id="label7_1">
-                <input type="radio" name="q7" value="1" onchange="selectAnswer(7, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>Normally Open contact ต่ออนุกรมกับ Output coil</span>
-              </label>
-            
-              <label class="choice-label" id="label7_2">
-                <input type="radio" name="q7" value="2" onchange="selectAnswer(7, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>Normally Open contact ของ Output coil ต่อขนานกับ Start button</span>
-              </label>
-            
-              <label class="choice-label" id="label7_3">
-                <input type="radio" name="q7" value="3" onchange="selectAnswer(7, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>Normally Closed contact ของ Output coil ต่อแบบอนุกรมกับ Start button</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock8">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 9 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(8)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">วงจรลอจิก OR จะให้สัญญาณเอาท์พุตเป็น 0 เมื่อใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label8_0">
-                <input type="radio" name="q8" value="0" onchange="selectAnswer(8, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>เมื่ออินพุตอย่างน้อยหนึ่งตัวเป็น 0</span>
-              </label>
-            
-              <label class="choice-label" id="label8_1">
-                <input type="radio" name="q8" value="1" onchange="selectAnswer(8, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>เมื่ออินพุตอย่างน้อยหนึ่งตัวเป็น 1</span>
-              </label>
-            
-              <label class="choice-label" id="label8_2">
-                <input type="radio" name="q8" value="2" onchange="selectAnswer(8, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>เมื่ออินพุตทุกตัวเป็น 1</span>
-              </label>
-            
-              <label class="choice-label" id="label8_3">
-                <input type="radio" name="q8" value="3" onchange="selectAnswer(8, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>เมื่ออินพุตทุกตัวเป็น 0</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock9">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 10 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(9)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">วงจรลอจิก NOT มีลักษณะการทำงานอย่างไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label9_0">
-                <input type="radio" name="q9" value="0" onchange="selectAnswer(9, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>ให้เอาท์พุตตรงข้ามกับอินพุต</span>
-              </label>
-            
-              <label class="choice-label" id="label9_1">
-                <input type="radio" name="q9" value="1" onchange="selectAnswer(9, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>ให้เอาท์พุตเป็น 0 เสมอ</span>
-              </label>
-            
-              <label class="choice-label" id="label9_2">
-                <input type="radio" name="q9" value="2" onchange="selectAnswer(9, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>ให้เอาท์พุตเป็น 1 เสมอ</span>
-              </label>
-            
-              <label class="choice-label" id="label9_3">
-                <input type="radio" name="q9" value="3" onchange="selectAnswer(9, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>ให้เอาท์พุตเท่ากับอินพุต</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock10">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 11 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(10)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">Self-holding circuit คือวงจรที่มีลักษณะอย่างไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label10_0">
-                <input type="radio" name="q10" value="0" onchange="selectAnswer(10, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>วงจรที่ล็อกตัวเองให้ทำงานต่อเนื่องหลังได้รับสัญญาณกระตุ้น</span>
-              </label>
-            
-              <label class="choice-label" id="label10_1">
-                <input type="radio" name="q10" value="1" onchange="selectAnswer(10, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>วงจรที่ทำงานเฉพาะเมื่อกดปุ่มค้างไว้</span>
-              </label>
-            
-              <label class="choice-label" id="label10_2">
-                <input type="radio" name="q10" value="2" onchange="selectAnswer(10, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>วงจรที่ทำงานได้โดยไม่ต้องใช้แหล่งจ่ายไฟ</span>
-              </label>
-            
-              <label class="choice-label" id="label10_3">
-                <input type="radio" name="q10" value="3" onchange="selectAnswer(10, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>วงจรที่ตัดการทำงานเองหลัง 5 วินาที</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock11">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 12 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(11)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">PLC ย่อมาจากอะไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label11_0">
-                <input type="radio" name="q11" value="0" onchange="selectAnswer(11, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>Programmable Ladder Controller</span>
-              </label>
-            
-              <label class="choice-label" id="label11_1">
-                <input type="radio" name="q11" value="1" onchange="selectAnswer(11, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>Programmable Logic Controller</span>
-              </label>
-            
-              <label class="choice-label" id="label11_2">
-                <input type="radio" name="q11" value="2" onchange="selectAnswer(11, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>Power Logic Controller</span>
-              </label>
-            
-              <label class="choice-label" id="label11_3">
-                <input type="radio" name="q11" value="3" onchange="selectAnswer(11, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>Processed Logic Control</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock12">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 13 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(12)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ใน Time Chart เมื่อสัญญาณมีการ Rising Edge หมายถึง?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label12_0">
-                <input type="radio" name="q12" value="0" onchange="selectAnswer(12, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>สัญญาณขาด</span>
-              </label>
-            
-              <label class="choice-label" id="label12_1">
-                <input type="radio" name="q12" value="1" onchange="selectAnswer(12, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>สัญญาณคงที่ที่ระดับ HIGH</span>
-              </label>
-            
-              <label class="choice-label" id="label12_2">
-                <input type="radio" name="q12" value="2" onchange="selectAnswer(12, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>สัญญาณเปลี่ยนจาก HIGH ไป LOW</span>
-              </label>
-            
-              <label class="choice-label" id="label12_3">
-                <input type="radio" name="q12" value="3" onchange="selectAnswer(12, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>สัญญาณเปลี่ยนจาก LOW ไป HIGH</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock13">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 14 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(13)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ใน Ladder Diagram ทิศทางการไหลของกระแสไฟฟ้า (Power flow) เป็นอย่างไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label13_0">
-                <input type="radio" name="q13" value="0" onchange="selectAnswer(13, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>จากบนลงล่าง</span>
-              </label>
-            
-              <label class="choice-label" id="label13_1">
-                <input type="radio" name="q13" value="1" onchange="selectAnswer(13, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>จากซ้ายไปขวา</span>
-              </label>
-            
-              <label class="choice-label" id="label13_2">
-                <input type="radio" name="q13" value="2" onchange="selectAnswer(13, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>จากขวาไปซ้าย</span>
-              </label>
-            
-              <label class="choice-label" id="label13_3">
-                <input type="radio" name="q13" value="3" onchange="selectAnswer(13, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>จากล่างขึ้นบน</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock14">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 15 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(14)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">การต่อ contact แบบขนาน (Parallel) ในวงจร PLC สอดคล้องกับลอจิกใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label14_0">
-                <input type="radio" name="q14" value="0" onchange="selectAnswer(14, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>AND</span>
-              </label>
-            
-              <label class="choice-label" id="label14_1">
-                <input type="radio" name="q14" value="1" onchange="selectAnswer(14, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>NAND</span>
-              </label>
-            
-              <label class="choice-label" id="label14_2">
-                <input type="radio" name="q14" value="2" onchange="selectAnswer(14, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>OR</span>
-              </label>
-            
-              <label class="choice-label" id="label14_3">
-                <input type="radio" name="q14" value="3" onchange="selectAnswer(14, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>NOT</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock15">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 16 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(15)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ใน Ladder Diagram แต่ละ Rung แทนอะไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label15_0">
-                <input type="radio" name="q15" value="0" onchange="selectAnswer(15, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>หนึ่งวินาทีของการทำงาน</span>
-              </label>
-            
-              <label class="choice-label" id="label15_1">
-                <input type="radio" name="q15" value="1" onchange="selectAnswer(15, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>หนึ่งบรรทัดของโปรแกรม ที่มีเงื่อนไขและผลลัพธ์</span>
-              </label>
-            
-              <label class="choice-label" id="label15_2">
-                <input type="radio" name="q15" value="2" onchange="selectAnswer(15, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>หนึ่งอุปกรณ์อินพุต</span>
-              </label>
-            
-              <label class="choice-label" id="label15_3">
-                <input type="radio" name="q15" value="3" onchange="selectAnswer(15, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>ขั้นบันไดหนึ่งขั้น</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock16">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 17 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(16)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">Normally Open (NO) contact ในสถานะปกติมีลักษณะอย่างไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label16_0">
-                <input type="radio" name="q16" value="0" onchange="selectAnswer(16, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>วงจรปิด (ไฟผ่านได้)</span>
-              </label>
-            
-              <label class="choice-label" id="label16_1">
-                <input type="radio" name="q16" value="1" onchange="selectAnswer(16, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>วงจรเปิด (ไฟผ่านไม่ได้)</span>
-              </label>
-            
-              <label class="choice-label" id="label16_2">
-                <input type="radio" name="q16" value="2" onchange="selectAnswer(16, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>วงจรลัด</span>
-              </label>
-            
-              <label class="choice-label" id="label16_3">
-                <input type="radio" name="q16" value="3" onchange="selectAnswer(16, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>ขึ้นอยู่กับแรงดันไฟฟ้า</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock17">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 18 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(17)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ใน Counter ค่า Accumulated Value (AC) คืออะไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label17_0">
-                <input type="radio" name="q17" value="0" onchange="selectAnswer(17, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>ค่าที่ตั้งไว้ล่วงหน้า</span>
-              </label>
-            
-              <label class="choice-label" id="label17_1">
-                <input type="radio" name="q17" value="1" onchange="selectAnswer(17, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>ค่าเวลาสะสม</span>
-              </label>
-            
-              <label class="choice-label" id="label17_2">
-                <input type="radio" name="q17" value="2" onchange="selectAnswer(17, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>ค่านับปัจจุบันที่นับสะสมได้</span>
-              </label>
-            
-              <label class="choice-label" id="label17_3">
-                <input type="radio" name="q17" value="3" onchange="selectAnswer(17, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>ค่าแรงดันสะสม</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock18">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 19 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(18)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">TON (Timer On-Delay) จะเริ่มนับเวลาเมื่อใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label18_0">
-                <input type="radio" name="q18" value="0" onchange="selectAnswer(18, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>เมื่อสัญญาณอินพุตเปลี่ยนจาก 0 เป็น 1</span>
-              </label>
-            
-              <label class="choice-label" id="label18_1">
-                <input type="radio" name="q18" value="1" onchange="selectAnswer(18, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>เมื่อ Output coil ทำงาน</span>
-              </label>
-            
-              <label class="choice-label" id="label18_2">
-                <input type="radio" name="q18" value="2" onchange="selectAnswer(18, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>เมื่อ PLC เริ่มทำงาน</span>
-              </label>
-            
-              <label class="choice-label" id="label18_3">
-                <input type="radio" name="q18" value="3" onchange="selectAnswer(18, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>เมื่อสัญญาณอินพุตเปลี่ยนจาก 1 เป็น 0</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock19">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 20 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(19)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ในแผนภาพ Time Chart หน่วยของแกนเวลามักแสดงเป็นหน่วยใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label19_0">
-                <input type="radio" name="q19" value="0" onchange="selectAnswer(19, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>เฮิรตซ์ (Hz)</span>
-              </label>
-            
-              <label class="choice-label" id="label19_1">
-                <input type="radio" name="q19" value="1" onchange="selectAnswer(19, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>แอมแปร์ (A)</span>
-              </label>
-            
-              <label class="choice-label" id="label19_2">
-                <input type="radio" name="q19" value="2" onchange="selectAnswer(19, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>วินาที (s) หรือมิลลิวินาที (ms)</span>
-              </label>
-            
-              <label class="choice-label" id="label19_3">
-                <input type="radio" name="q19" value="3" onchange="selectAnswer(19, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>โวลต์ (V)</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock20">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 21 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(20)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">CTU (Count Up Counter) จะทำงานอย่างไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label20_0">
-                <input type="radio" name="q20" value="0" onchange="selectAnswer(20, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>นับถอยหลังจากค่าที่กำหนดลงมาถึง 0</span>
-              </label>
-            
-              <label class="choice-label" id="label20_1">
-                <input type="radio" name="q20" value="1" onchange="selectAnswer(20, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>นับเพิ่มขึ้นทุกครั้งที่ได้รับสัญญาณ และ Output จะ ON เมื่อถึงค่าที่ตั้งไว้</span>
-              </label>
-            
-              <label class="choice-label" id="label20_2">
-                <input type="radio" name="q20" value="2" onchange="selectAnswer(20, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>นับเวลาแบบต่อเนื่อง</span>
-              </label>
-            
-              <label class="choice-label" id="label20_3">
-                <input type="radio" name="q20" value="3" onchange="selectAnswer(20, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>นับจำนวนข้อผิดพลาดในโปรแกรม</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock21">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 22 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(21)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ใน PLC Output Coil (--( )--)  จะทำงานเมื่อใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label21_0">
-                <input type="radio" name="q21" value="0" onchange="selectAnswer(21, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>เมื่อได้รับสัญญาณอนาล็อก</span>
-              </label>
-            
-              <label class="choice-label" id="label21_1">
-                <input type="radio" name="q21" value="1" onchange="selectAnswer(21, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>เมื่อ PLC รีสตาร์ท</span>
-              </label>
-            
-              <label class="choice-label" id="label21_2">
-                <input type="radio" name="q21" value="2" onchange="selectAnswer(21, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>เมื่อวงจรในแถวนั้นมีกระแสไหลผ่าน (Rung condition = TRUE)</span>
-              </label>
-            
-              <label class="choice-label" id="label21_3">
-                <input type="radio" name="q21" value="3" onchange="selectAnswer(21, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>เมื่อวงจรในแถวนั้นไม่มีกระแสไหลผ่าน</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock22">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 23 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(22)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ในแผนภาพ Time Chart แกนนอนแทนค่าอะไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label22_0">
-                <input type="radio" name="q22" value="0" onchange="selectAnswer(22, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>กระแสไฟฟ้า</span>
-              </label>
-            
-              <label class="choice-label" id="label22_1">
-                <input type="radio" name="q22" value="1" onchange="selectAnswer(22, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>เวลา</span>
-              </label>
-            
-              <label class="choice-label" id="label22_2">
-                <input type="radio" name="q22" value="2" onchange="selectAnswer(22, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>แรงดันไฟฟ้า</span>
-              </label>
-            
-              <label class="choice-label" id="label22_3">
-                <input type="radio" name="q22" value="3" onchange="selectAnswer(22, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>ความถี่</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock23">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 24 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(23)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">การควบคุมแบบใดที่ใช้สัญญาณต่อเนื่อง (Continuous signal)?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label23_0">
-                <input type="radio" name="q23" value="0" onchange="selectAnswer(23, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>On/Off control</span>
-              </label>
-            
-              <label class="choice-label" id="label23_1">
-                <input type="radio" name="q23" value="1" onchange="selectAnswer(23, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>Analog control</span>
-              </label>
-            
-              <label class="choice-label" id="label23_2">
-                <input type="radio" name="q23" value="2" onchange="selectAnswer(23, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>Digital control</span>
-              </label>
-            
-              <label class="choice-label" id="label23_3">
-                <input type="radio" name="q23" value="3" onchange="selectAnswer(23, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>Sequence control</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock24">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 25 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(24)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">การควบคุมแบบ Feedback Control แตกต่างจาก Open Loop Control อย่างไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label24_0">
-                <input type="radio" name="q24" value="0" onchange="selectAnswer(24, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>Feedback Control มีการนำสัญญาณเอาท์พุตย้อนกลับมาเปรียบเทียบกับค่าที่ต้องการ</span>
-              </label>
-            
-              <label class="choice-label" id="label24_1">
-                <input type="radio" name="q24" value="1" onchange="selectAnswer(24, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>Feedback Control ใช้กำลังไฟฟ้าน้อยกว่า</span>
-              </label>
-            
-              <label class="choice-label" id="label24_2">
-                <input type="radio" name="q24" value="2" onchange="selectAnswer(24, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>ไม่มีความแตกต่าง</span>
-              </label>
-            
-              <label class="choice-label" id="label24_3">
-                <input type="radio" name="q24" value="3" onchange="selectAnswer(24, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>Open Loop Control แม่นยำกว่า</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock25">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 26 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(25)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ในวงจรควบคุม PLC ปุ่มหยุดฉุกเฉิน (Emergency Stop) โดยทั่วไปใช้ contact ชนิดใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label25_0">
-                <input type="radio" name="q25" value="0" onchange="selectAnswer(25, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>Normally Closed (NC)</span>
-              </label>
-            
-              <label class="choice-label" id="label25_1">
-                <input type="radio" name="q25" value="1" onchange="selectAnswer(25, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>Momentary</span>
-              </label>
-            
-              <label class="choice-label" id="label25_2">
-                <input type="radio" name="q25" value="2" onchange="selectAnswer(25, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>Normally Open (NO)</span>
-              </label>
-            
-              <label class="choice-label" id="label25_3">
-                <input type="radio" name="q25" value="3" onchange="selectAnswer(25, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>Toggle</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock26">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 27 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(26)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">Counter circuit ใช้สำหรับ?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label26_0">
-                <input type="radio" name="q26" value="0" onchange="selectAnswer(26, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>ควบคุมแรงดันไฟฟ้า</span>
-              </label>
-            
-              <label class="choice-label" id="label26_1">
-                <input type="radio" name="q26" value="1" onchange="selectAnswer(26, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>นับจำนวนเหตุการณ์หรือสัญญาณที่เกิดขึ้น</span>
-              </label>
-            
-              <label class="choice-label" id="label26_2">
-                <input type="radio" name="q26" value="2" onchange="selectAnswer(26, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>จับเวลาการทำงาน</span>
-              </label>
-            
-              <label class="choice-label" id="label26_3">
-                <input type="radio" name="q26" value="3" onchange="selectAnswer(26, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>แสดงผลลัพธ์ทางหน้าจอ</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock27">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 28 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(27)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ใน Sequence Control ขั้นตอนถัดไปจะเริ่มได้เมื่อใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label27_0">
-                <input type="radio" name="q27" value="0" onchange="selectAnswer(27, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>เมื่อ PLC รีสตาร์ท</span>
-              </label>
-            
-              <label class="choice-label" id="label27_1">
-                <input type="radio" name="q27" value="1" onchange="selectAnswer(27, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>เมื่อผู้ควบคุมกดปุ่มเสมอ</span>
-              </label>
-            
-              <label class="choice-label" id="label27_2">
-                <input type="radio" name="q27" value="2" onchange="selectAnswer(27, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>เมื่อผ่านเวลาที่กำหนดเท่านั้น</span>
-              </label>
-            
-              <label class="choice-label" id="label27_3">
-                <input type="radio" name="q27" value="3" onchange="selectAnswer(27, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>เมื่อขั้นตอนก่อนหน้าเสร็จสมบูรณ์หรือตรงตามเงื่อนไข</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock28">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 29 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(28)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">การควบคุมแบบ Sequence Control หมายถึงอะไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label28_0">
-                <input type="radio" name="q28" value="0" onchange="selectAnswer(28, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>การควบคุมที่ทำงานแบบสุ่ม</span>
-              </label>
-            
-              <label class="choice-label" id="label28_1">
-                <input type="radio" name="q28" value="1" onchange="selectAnswer(28, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>การควบคุมที่ใช้สัญญาณอนาล็อกเท่านั้น</span>
-              </label>
-            
-              <label class="choice-label" id="label28_2">
-                <input type="radio" name="q28" value="2" onchange="selectAnswer(28, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>การควบคุมที่ทำงานตามลำดับขั้นตอนที่กำหนดไว้ล่วงหน้า</span>
-              </label>
-            
-              <label class="choice-label" id="label28_3">
-                <input type="radio" name="q28" value="3" onchange="selectAnswer(28, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>การควบคุมที่ทำงานพร้อมกันทุกขั้นตอน</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock29">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 30 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(29)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ตาราง Truth Table ของ AND gate เมื่อ A=1, B=0 ผลลัพธ์คือ?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label29_0">
-                <input type="radio" name="q29" value="0" onchange="selectAnswer(29, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>ขึ้นอยู่กับวงจร</span>
-              </label>
-            
-              <label class="choice-label" id="label29_1">
-                <input type="radio" name="q29" value="1" onchange="selectAnswer(29, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>0</span>
-              </label>
-            
-              <label class="choice-label" id="label29_2">
-                <input type="radio" name="q29" value="2" onchange="selectAnswer(29, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>ไม่สามารถระบุได้</span>
-              </label>
-            
-              <label class="choice-label" id="label29_3">
-                <input type="radio" name="q29" value="3" onchange="selectAnswer(29, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>1</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock30">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 31 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(30)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">แผนภาพการทำงาน (Time Chart) ใช้แสดงสิ่งใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label30_0">
-                <input type="radio" name="q30" value="0" onchange="selectAnswer(30, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>แสดงสถานะ ON/OFF ของสัญญาณต่างๆ ตามเวลา</span>
-              </label>
-            
-              <label class="choice-label" id="label30_1">
-                <input type="radio" name="q30" value="1" onchange="selectAnswer(30, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>แสดงขนาดกระแสไฟฟ้าตามเวลา</span>
-              </label>
-            
-              <label class="choice-label" id="label30_2">
-                <input type="radio" name="q30" value="2" onchange="selectAnswer(30, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>แสดงความเร็วมอเตอร์ตามเวลา</span>
-              </label>
-            
-              <label class="choice-label" id="label30_3">
-                <input type="radio" name="q30" value="3" onchange="selectAnswer(30, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>แสดงอุณหภูมิของอุปกรณ์ตามเวลา</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock31">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 32 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(31)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">Timer circuit ในวงจร PLC ทำหน้าที่อะไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label31_0">
-                <input type="radio" name="q31" value="0" onchange="selectAnswer(31, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>แปลงสัญญาณดิจิตัลเป็นอนาล็อก</span>
-              </label>
-            
-              <label class="choice-label" id="label31_1">
-                <input type="radio" name="q31" value="1" onchange="selectAnswer(31, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>ควบคุมการทำงานตามเวลาที่กำหนด</span>
-              </label>
-            
-              <label class="choice-label" id="label31_2">
-                <input type="radio" name="q31" value="2" onchange="selectAnswer(31, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>นับจำนวนครั้งการทำงาน</span>
-              </label>
-            
-              <label class="choice-label" id="label31_3">
-                <input type="radio" name="q31" value="3" onchange="selectAnswer(31, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>วัดอุณหภูมิในกระบวนการ</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock32">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 33 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(32)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">Ladder Diagram ในการเขียนโปรแกรม PLC เปรียบเสมือนอะไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label32_0">
-                <input type="radio" name="q32" value="0" onchange="selectAnswer(32, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>แผนผังวงจรไฟฟ้ากระแสสลับ</span>
-              </label>
-            
-              <label class="choice-label" id="label32_1">
-                <input type="radio" name="q32" value="1" onchange="selectAnswer(32, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>แผนผังวงจรอิเล็กทรอนิกส์</span>
-              </label>
-            
-              <label class="choice-label" id="label32_2">
-                <input type="radio" name="q32" value="2" onchange="selectAnswer(32, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>แผนผังวงจรรีเลย์และสวิตช์</span>
-              </label>
-            
-              <label class="choice-label" id="label32_3">
-                <input type="radio" name="q32" value="3" onchange="selectAnswer(32, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>แผนผังโครงสร้างข้อมูล</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock33">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 34 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(33)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ใน PLC การทำงานแบบ Scan cycle หมายถึงอะไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label33_0">
-                <input type="radio" name="q33" value="0" onchange="selectAnswer(33, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>รอบการทำงานที่ PLC อ่านอินพุต ประมวลผล และส่งเอาท์พุต ตามลำดับซ้ำๆ</span>
-              </label>
-            
-              <label class="choice-label" id="label33_1">
-                <input type="radio" name="q33" value="1" onchange="selectAnswer(33, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>การสแกนหาไวรัสในโปรแกรม</span>
-              </label>
-            
-              <label class="choice-label" id="label33_2">
-                <input type="radio" name="q33" value="2" onchange="selectAnswer(33, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>การตรวจสอบสายไฟฟ้า</span>
-              </label>
-            
-              <label class="choice-label" id="label33_3">
-                <input type="radio" name="q33" value="3" onchange="selectAnswer(33, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>การสแกนเครือข่ายการสื่อสาร</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock34">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 35 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(34)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ในวงจร PLC สัญลักษณ์ --[/]-- แทนอะไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label34_0">
-                <input type="radio" name="q34" value="0" onchange="selectAnswer(34, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>Normally Open Contact</span>
-              </label>
-            
-              <label class="choice-label" id="label34_1">
-                <input type="radio" name="q34" value="1" onchange="selectAnswer(34, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>Counter Coil</span>
-              </label>
-            
-              <label class="choice-label" id="label34_2">
-                <input type="radio" name="q34" value="2" onchange="selectAnswer(34, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>Output Coil</span>
-              </label>
-            
-              <label class="choice-label" id="label34_3">
-                <input type="radio" name="q34" value="3" onchange="selectAnswer(34, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>Normally Closed Contact</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock35">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 36 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(35)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">การควบคุมแบบ Closed Loop มีข้อดีกว่า Open Loop อย่างไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label35_0">
-                <input type="radio" name="q35" value="0" onchange="selectAnswer(35, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>สามารถแก้ไขความผิดพลาดได้โดยอัตโนมัติ</span>
-              </label>
-            
-              <label class="choice-label" id="label35_1">
-                <input type="radio" name="q35" value="1" onchange="selectAnswer(35, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>ง่ายกว่าในการออกแบบ</span>
-              </label>
-            
-              <label class="choice-label" id="label35_2">
-                <input type="radio" name="q35" value="2" onchange="selectAnswer(35, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>ใช้พลังงานน้อยกว่า</span>
-              </label>
-            
-              <label class="choice-label" id="label35_3">
-                <input type="radio" name="q35" value="3" onchange="selectAnswer(35, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>ราคาถูกกว่า</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock36">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 37 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(36)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">Normally Closed (NC) contact ในสถานะปกติมีลักษณะอย่างไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label36_0">
-                <input type="radio" name="q36" value="0" onchange="selectAnswer(36, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>ขึ้นอยู่กับอุณหภูมิ</span>
-              </label>
-            
-              <label class="choice-label" id="label36_1">
-                <input type="radio" name="q36" value="1" onchange="selectAnswer(36, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>วงจรปิด (ไฟผ่านได้)</span>
-              </label>
-            
-              <label class="choice-label" id="label36_2">
-                <input type="radio" name="q36" value="2" onchange="selectAnswer(36, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>วงจรลัด</span>
-              </label>
-            
-              <label class="choice-label" id="label36_3">
-                <input type="radio" name="q36" value="3" onchange="selectAnswer(36, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>วงจรเปิด (ไฟผ่านไม่ได้)</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock37">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 38 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(37)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ในวงจรลอจิก ค่า Binary 1 โดยทั่วไปสอดคล้องกับแรงดันไฟฟ้าประมาณเท่าใดในระบบ TTL?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label37_0">
-                <input type="radio" name="q37" value="0" onchange="selectAnswer(37, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>24V</span>
-              </label>
-            
-              <label class="choice-label" id="label37_1">
-                <input type="radio" name="q37" value="1" onchange="selectAnswer(37, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>5V</span>
-              </label>
-            
-              <label class="choice-label" id="label37_2">
-                <input type="radio" name="q37" value="2" onchange="selectAnswer(37, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>12V</span>
-              </label>
-            
-              <label class="choice-label" id="label37_3">
-                <input type="radio" name="q37" value="3" onchange="selectAnswer(37, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>0V</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock38">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 39 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(38)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ผลลัพธ์ของ XOR gate เมื่อ A=1, B=1 คือ?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label38_0">
-                <input type="radio" name="q38" value="0" onchange="selectAnswer(38, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>2</span>
-              </label>
-            
-              <label class="choice-label" id="label38_1">
-                <input type="radio" name="q38" value="1" onchange="selectAnswer(38, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>ขึ้นอยู่กับแรงดัน</span>
-              </label>
-            
-              <label class="choice-label" id="label38_2">
-                <input type="radio" name="q38" value="2" onchange="selectAnswer(38, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>1</span>
-              </label>
-            
-              <label class="choice-label" id="label38_3">
-                <input type="radio" name="q38" value="3" onchange="selectAnswer(38, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>0</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock39">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 40 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(39)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ใน Sequence Control ข้อใดคือความหมายของ "Initial Step"?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label39_0">
-                <input type="radio" name="q39" value="0" onchange="selectAnswer(39, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>ขั้นตอนที่ทำงานซ้ำ</span>
-              </label>
-            
-              <label class="choice-label" id="label39_1">
-                <input type="radio" name="q39" value="1" onchange="selectAnswer(39, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>ขั้นตอนที่ใช้ Timer</span>
-              </label>
-            
-              <label class="choice-label" id="label39_2">
-                <input type="radio" name="q39" value="2" onchange="selectAnswer(39, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>ขั้นตอนเริ่มต้นเมื่อระบบเริ่มทำงานหรือหลังรีเซ็ต</span>
-              </label>
-            
-              <label class="choice-label" id="label39_3">
-                <input type="radio" name="q39" value="3" onchange="selectAnswer(39, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>ขั้นตอนสุดท้ายของกระบวนการ</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock40">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 41 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(40)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">การควบคุมแบบ On/Off Control จัดอยู่ในประเภทใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label40_0">
-                <input type="radio" name="q40" value="0" onchange="selectAnswer(40, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>Proportional control</span>
-              </label>
-            
-              <label class="choice-label" id="label40_1">
-                <input type="radio" name="q40" value="1" onchange="selectAnswer(40, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>Digital control</span>
-              </label>
-            
-              <label class="choice-label" id="label40_2">
-                <input type="radio" name="q40" value="2" onchange="selectAnswer(40, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>PID control</span>
-              </label>
-            
-              <label class="choice-label" id="label40_3">
-                <input type="radio" name="q40" value="3" onchange="selectAnswer(40, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>Analog control</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock41">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 42 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(41)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">วงจร Self-holding ต้องการปุ่มกดชนิดใดสำหรับ Stop?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label41_0">
-                <input type="radio" name="q41" value="0" onchange="selectAnswer(41, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>Selector switch</span>
-              </label>
-            
-              <label class="choice-label" id="label41_1">
-                <input type="radio" name="q41" value="1" onchange="selectAnswer(41, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>Normally Open (NO)</span>
-              </label>
-            
-              <label class="choice-label" id="label41_2">
-                <input type="radio" name="q41" value="2" onchange="selectAnswer(41, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>Normally Closed (NC)</span>
-              </label>
-            
-              <label class="choice-label" id="label41_3">
-                <input type="radio" name="q41" value="3" onchange="selectAnswer(41, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>Toggle switch</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock42">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 43 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(42)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">TOF (Timer Off-Delay) จะเริ่มนับเวลาเมื่อใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label42_0">
-                <input type="radio" name="q42" value="0" onchange="selectAnswer(42, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>เมื่อ PLC เริ่มทำงาน</span>
-              </label>
-            
-              <label class="choice-label" id="label42_1">
-                <input type="radio" name="q42" value="1" onchange="selectAnswer(42, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>เมื่อสัญญาณอินพุตเปลี่ยนจาก 0 เป็น 1</span>
-              </label>
-            
-              <label class="choice-label" id="label42_2">
-                <input type="radio" name="q42" value="2" onchange="selectAnswer(42, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>เมื่อ Counter ครบค่าที่กำหนด</span>
-              </label>
-            
-              <label class="choice-label" id="label42_3">
-                <input type="radio" name="q42" value="3" onchange="selectAnswer(42, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>เมื่อสัญญาณอินพุตเปลี่ยนจาก 1 เป็น 0</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock43">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 44 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(43)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ในวงจร PLC สัญลักษณ์ --[ ]-- แทนอะไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label43_0">
-                <input type="radio" name="q43" value="0" onchange="selectAnswer(43, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>Normally Open Contact</span>
-              </label>
-            
-              <label class="choice-label" id="label43_1">
-                <input type="radio" name="q43" value="1" onchange="selectAnswer(43, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>Timer Coil</span>
-              </label>
-            
-              <label class="choice-label" id="label43_2">
-                <input type="radio" name="q43" value="2" onchange="selectAnswer(43, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>Output Coil</span>
-              </label>
-            
-              <label class="choice-label" id="label43_3">
-                <input type="radio" name="q43" value="3" onchange="selectAnswer(43, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>Normally Closed Contact</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock44">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 45 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(44)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">การต่อ contact แบบอนุกรม (Series) ในวงจร PLC สอดคล้องกับลอจิกใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label44_0">
-                <input type="radio" name="q44" value="0" onchange="selectAnswer(44, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>AND</span>
-              </label>
-            
-              <label class="choice-label" id="label44_1">
-                <input type="radio" name="q44" value="1" onchange="selectAnswer(44, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>XOR</span>
-              </label>
-            
-              <label class="choice-label" id="label44_2">
-                <input type="radio" name="q44" value="2" onchange="selectAnswer(44, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>OR</span>
-              </label>
-            
-              <label class="choice-label" id="label44_3">
-                <input type="radio" name="q44" value="3" onchange="selectAnswer(44, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>NOT</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock45">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 46 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(45)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ในวงจร Timer ค่า Preset Value (PV) คืออะไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label45_0">
-                <input type="radio" name="q45" value="0" onchange="selectAnswer(45, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>ค่ากระแสที่ตั้งไว้</span>
-              </label>
-            
-              <label class="choice-label" id="label45_1">
-                <input type="radio" name="q45" value="1" onchange="selectAnswer(45, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>ค่าเวลาที่ตั้งไว้ล่วงหน้า</span>
-              </label>
-            
-              <label class="choice-label" id="label45_2">
-                <input type="radio" name="q45" value="2" onchange="selectAnswer(45, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>ค่าแรงดันที่ตั้งไว้</span>
-              </label>
-            
-              <label class="choice-label" id="label45_3">
-                <input type="radio" name="q45" value="3" onchange="selectAnswer(45, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>ค่านับที่ตั้งไว้</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock46">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 47 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(46)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ถ้าต้องการให้ไฟแสดงสถานะ ON เมื่อเซ็นเซอร์ใดเซ็นเซอร์หนึ่งจาก 4 ตัว ตรวจจับได้ ควรใช้วงจรใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label46_0">
-                <input type="radio" name="q46" value="0" onchange="selectAnswer(46, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>AND gate 4 อินพุต</span>
-              </label>
-            
-              <label class="choice-label" id="label46_1">
-                <input type="radio" name="q46" value="1" onchange="selectAnswer(46, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>NOT gate</span>
-              </label>
-            
-              <label class="choice-label" id="label46_2">
-                <input type="radio" name="q46" value="2" onchange="selectAnswer(46, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>NAND gate</span>
-              </label>
-            
-              <label class="choice-label" id="label46_3">
-                <input type="radio" name="q46" value="3" onchange="selectAnswer(46, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>OR gate 4 อินพุต</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock47">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 48 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(47)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">Interlock circuit ในระบบ PLC ใช้เพื่ออะไร?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label47_0">
-                <input type="radio" name="q47" value="0" onchange="selectAnswer(47, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>เพิ่มกระแสไฟฟ้าในวงจร</span>
-              </label>
-            
-              <label class="choice-label" id="label47_1">
-                <input type="radio" name="q47" value="1" onchange="selectAnswer(47, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>เพิ่มความเร็วในการทำงาน</span>
-              </label>
-            
-              <label class="choice-label" id="label47_2">
-                <input type="radio" name="q47" value="2" onchange="selectAnswer(47, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>ป้องกันไม่ให้อุปกรณ์สองตัวทำงานพร้อมกันในเวลาเดียวกัน</span>
-              </label>
-            
-              <label class="choice-label" id="label47_3">
-                <input type="radio" name="q47" value="3" onchange="selectAnswer(47, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>ลดการใช้พลังงาน</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock48">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 49 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(48)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">หากต้องการให้ Buzzer ดัง 3 วินาทีหลังจากที่ Start button ถูกกด ควรใช้วงจรใด?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label48_0">
-                <input type="radio" name="q48" value="0" onchange="selectAnswer(48, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>Counter circuit</span>
-              </label>
-            
-              <label class="choice-label" id="label48_1">
-                <input type="radio" name="q48" value="1" onchange="selectAnswer(48, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>Interlock circuit</span>
-              </label>
-            
-              <label class="choice-label" id="label48_2">
-                <input type="radio" name="q48" value="2" onchange="selectAnswer(48, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>TON Timer circuit</span>
-              </label>
-            
-              <label class="choice-label" id="label48_3">
-                <input type="radio" name="q48" value="3" onchange="selectAnswer(48, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>Self-holding circuit</span>
-              </label>
-            
-          </div>
-        </div>
-      
-        <div class="question-block" id="qblock49">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ 50 จาก 50</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(49)">🚨 แจ้งปัญหา</button>
-          </div>
-          <div class="question-text">ใน Time Chart หากเส้นกราฟของสัญญาณอยู่ที่ระดับ HIGH หมายความว่า?</div>
-          
-          <div class="choices">
-            
-              <label class="choice-label" id="label49_0">
-                <input type="radio" name="q49" value="0" onchange="selectAnswer(49, 0)">
-                <span class="choice-letter">ก.</span>
-                <span>สัญญาณมีค่าเป็น 0 หรือ OFF</span>
-              </label>
-            
-              <label class="choice-label" id="label49_1">
-                <input type="radio" name="q49" value="1" onchange="selectAnswer(49, 1)">
-                <span class="choice-letter">ข.</span>
-                <span>สัญญาณมีค่าเป็น 1 หรือ ON</span>
-              </label>
-            
-              <label class="choice-label" id="label49_2">
-                <input type="radio" name="q49" value="2" onchange="selectAnswer(49, 2)">
-                <span class="choice-letter">ค.</span>
-                <span>ไม่มีสัญญาณ</span>
-              </label>
-            
-              <label class="choice-label" id="label49_3">
-                <input type="radio" name="q49" value="3" onchange="selectAnswer(49, 3)">
-                <span class="choice-letter">ง.</span>
-                <span>สัญญาณขาด</span>
-              </label>
-            
-          </div>
-        </div>
+      <div class="form-control w-full mb-4">
+        <label class="label"><span class="label-text font-bold text-slate-700">รายละเอียดเพิ่มเติม (ถ้ามี)</span></label>
+        <textarea class="textarea textarea-bordered h-24" id="reportNote" placeholder="อธิบายเพิ่มเติมเพื่อให้แอดมินแก้ไขได้ตรงจุด..."></textarea>
       </div>
+      
+      <div id="reportStatus" class="text-sm font-bold text-center mb-4 hidden"></div>
 
-  <!-- Bottom Nav -->
-  <div class="exam-nav" id="examNav">
-    <button class="nav-toggle-btn" id="navToggleBtn" onclick="toggleNav()" title="ซ่อน/แสดงแถบความคืบหน้า">▼</button>
-    <div class="question-dots" id="questionDots">
-        <div class="q-dot" id="dot0" onclick="scrollToQuestion(0)">1</div>
-      
-        <div class="q-dot" id="dot1" onclick="scrollToQuestion(1)">2</div>
-      
-        <div class="q-dot" id="dot2" onclick="scrollToQuestion(2)">3</div>
-      
-        <div class="q-dot" id="dot3" onclick="scrollToQuestion(3)">4</div>
-      
-        <div class="q-dot" id="dot4" onclick="scrollToQuestion(4)">5</div>
-      
-        <div class="q-dot" id="dot5" onclick="scrollToQuestion(5)">6</div>
-      
-        <div class="q-dot" id="dot6" onclick="scrollToQuestion(6)">7</div>
-      
-        <div class="q-dot" id="dot7" onclick="scrollToQuestion(7)">8</div>
-      
-        <div class="q-dot" id="dot8" onclick="scrollToQuestion(8)">9</div>
-      
-        <div class="q-dot" id="dot9" onclick="scrollToQuestion(9)">10</div>
-      
-        <div class="q-dot" id="dot10" onclick="scrollToQuestion(10)">11</div>
-      
-        <div class="q-dot" id="dot11" onclick="scrollToQuestion(11)">12</div>
-      
-        <div class="q-dot" id="dot12" onclick="scrollToQuestion(12)">13</div>
-      
-        <div class="q-dot" id="dot13" onclick="scrollToQuestion(13)">14</div>
-      
-        <div class="q-dot" id="dot14" onclick="scrollToQuestion(14)">15</div>
-      
-        <div class="q-dot" id="dot15" onclick="scrollToQuestion(15)">16</div>
-      
-        <div class="q-dot" id="dot16" onclick="scrollToQuestion(16)">17</div>
-      
-        <div class="q-dot" id="dot17" onclick="scrollToQuestion(17)">18</div>
-      
-        <div class="q-dot" id="dot18" onclick="scrollToQuestion(18)">19</div>
-      
-        <div class="q-dot" id="dot19" onclick="scrollToQuestion(19)">20</div>
-      
-        <div class="q-dot" id="dot20" onclick="scrollToQuestion(20)">21</div>
-      
-        <div class="q-dot" id="dot21" onclick="scrollToQuestion(21)">22</div>
-      
-        <div class="q-dot" id="dot22" onclick="scrollToQuestion(22)">23</div>
-      
-        <div class="q-dot" id="dot23" onclick="scrollToQuestion(23)">24</div>
-      
-        <div class="q-dot" id="dot24" onclick="scrollToQuestion(24)">25</div>
-      
-        <div class="q-dot" id="dot25" onclick="scrollToQuestion(25)">26</div>
-      
-        <div class="q-dot" id="dot26" onclick="scrollToQuestion(26)">27</div>
-      
-        <div class="q-dot" id="dot27" onclick="scrollToQuestion(27)">28</div>
-      
-        <div class="q-dot" id="dot28" onclick="scrollToQuestion(28)">29</div>
-      
-        <div class="q-dot" id="dot29" onclick="scrollToQuestion(29)">30</div>
-      
-        <div class="q-dot" id="dot30" onclick="scrollToQuestion(30)">31</div>
-      
-        <div class="q-dot" id="dot31" onclick="scrollToQuestion(31)">32</div>
-      
-        <div class="q-dot" id="dot32" onclick="scrollToQuestion(32)">33</div>
-      
-        <div class="q-dot" id="dot33" onclick="scrollToQuestion(33)">34</div>
-      
-        <div class="q-dot" id="dot34" onclick="scrollToQuestion(34)">35</div>
-      
-        <div class="q-dot" id="dot35" onclick="scrollToQuestion(35)">36</div>
-      
-        <div class="q-dot" id="dot36" onclick="scrollToQuestion(36)">37</div>
-      
-        <div class="q-dot" id="dot37" onclick="scrollToQuestion(37)">38</div>
-      
-        <div class="q-dot" id="dot38" onclick="scrollToQuestion(38)">39</div>
-      
-        <div class="q-dot" id="dot39" onclick="scrollToQuestion(39)">40</div>
-      
-        <div class="q-dot" id="dot40" onclick="scrollToQuestion(40)">41</div>
-      
-        <div class="q-dot" id="dot41" onclick="scrollToQuestion(41)">42</div>
-      
-        <div class="q-dot" id="dot42" onclick="scrollToQuestion(42)">43</div>
-      
-        <div class="q-dot" id="dot43" onclick="scrollToQuestion(43)">44</div>
-      
-        <div class="q-dot" id="dot44" onclick="scrollToQuestion(44)">45</div>
-      
-        <div class="q-dot" id="dot45" onclick="scrollToQuestion(45)">46</div>
-      
-        <div class="q-dot" id="dot46" onclick="scrollToQuestion(46)">47</div>
-      
-        <div class="q-dot" id="dot47" onclick="scrollToQuestion(47)">48</div>
-      
-        <div class="q-dot" id="dot48" onclick="scrollToQuestion(48)">49</div>
-      
-        <div class="q-dot" id="dot49" onclick="scrollToQuestion(49)">50</div>
+      <div class="modal-action">
+        <button class="btn btn-ghost" onclick="closeReportModal()">ยกเลิก</button>
+        <button class="btn btn-error text-white" id="reportSubmitBtn" onclick="submitReport()"><i class="fa-solid fa-paper-plane"></i> ส่งรายงาน</button>
       </div>
-    <div style="display:flex;gap:8px;flex-shrink:0;">
-      <button class="btn btn-outline btn-sm" onclick="openCancelModal()" style="color:#e74c3c;border-color:#e74c3c;white-space:nowrap;">✕ ยกเลิก</button>
-      <button class="btn btn-primary" onclick="openModal()" style="white-space:nowrap;">ส่งข้อสอบ</button>
     </div>
-  </div>
+  </dialog>
+
+  <style>
+    /* Dots styling overriding some daisy/tailwind base */
+    .q-dot {
+      width: 36px; height: 36px; min-width: 36px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; border: 2px solid #e2e8f0;
+      font-weight: bold; font-size: 0.85rem; color: #64748b;
+      cursor: pointer; transition: all 0.2s; background: white;
+    }
+    .q-dot:hover { border-color: #cbd5e1; background: #f8fafc; }
+    .q-dot.answered {
+      background-color: #1a5276; color: white; border-color: #1a5276;
+    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .choice-label {
+      display: flex; padding: 12px 16px; border-radius: 12px;
+      border: 2px solid #e2e8f0; margin-bottom: 8px;
+      cursor: pointer; transition: all 0.2s;
+      background-color: white; align-items: flex-start;
+    }
+    .choice-label:hover { border-color: #cbd5e1; background-color: #f8fafc; }
+    .choice-label.selected {
+      border-color: #fb923c; background-color: #fff7ed;
+    }
+    .timer-warning { color: #ea580c; animation: pulse 2s infinite; }
+    .timer-danger { color: #dc2626; animation: pulse 1s infinite; }
+  </style>
 
   <script src="./assets/questions_set1.js"></script>
   <script src="./assets/questions_set2.js"></script>
@@ -2017,7 +167,6 @@
     const examPassScore = _ss ? _ss.passScore : (examSet.passScore || PASS_SCORE);
     const examTimeMinutes = _ss ? _ss.timeMinutes : (examSet.timeMinutes || EXAM_TIME_MINUTES);
 
-    // สลับตำแหน่งตัวเลือกแต่ละข้อ พร้อมอัปเดต answer index
     function shuffleChoices(qs) {
       return qs.map(q => {
         const correctText = q.choices[q.answer];
@@ -2026,42 +175,48 @@
       });
     }
 
-    // สลับข้อและตัวเลือกเฉพาะในชุดนั้น ไม่ข้ามชุด
     const questions = shuffleChoices(shuffleArray(examSet.questions));
     const userAnswers = new Array(questions.length).fill(null);
     let timeLeft = examTimeMinutes * 60;
     let timerInterval;
     let examSubmitted = false;
 
-    // Render all questions at once (scrollable)
+    // Render questions
     function renderQuestions() {
       const body = document.getElementById('examBody');
       const letters = ['ก', 'ข', 'ค', 'ง'];
       body.innerHTML = questions.map((q, i) => `
-        <div class="question-block" id="qblock${i}">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-            <div class="question-num">ข้อที่ ${i + 1} จาก ${questions.length}</div>
-            <button class="btn btn-sm" style="background:#fff3f3;color:#c0392b;border:1px solid #e8a0a0;font-size:0.75rem;padding:3px 10px;flex-shrink:0;" onclick="openReportModal(${i})">🚨 แจ้งปัญหา</button>
+        <div class="glass-card bg-white/90 p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200" id="qblock${i}" data-aos="fade-up">
+          <div class="flex justify-between items-start gap-4 mb-4 border-b border-slate-100 pb-4">
+            <div class="font-bold text-primary flex items-center gap-2">
+              <span class="bg-blue-100 text-primary w-8 h-8 rounded-full flex items-center justify-center">${i + 1}</span>
+              จาก ${questions.length}
+            </div>
+            <button class="btn btn-ghost btn-xs text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg" onclick="openReportModal(${i})">
+              <i class="fa-solid fa-triangle-exclamation mr-1"></i> แจ้งปัญหา
+            </button>
           </div>
-          <div class="question-text">${q.text}</div>
-          ${q.image ? `<img src="${q.image}" style="max-width:100%;max-height:220px;border-radius:8px;margin-bottom:12px;display:block;">` : ''}
-          <div class="choices">
+          <div class="text-lg font-medium text-slate-800 mb-6 leading-relaxed">${q.text}</div>
+          ${q.image ? `<img src="${q.image}" class="max-w-full max-h-64 object-contain rounded-xl border border-slate-200 mb-6 mx-auto">` : ''}
+          <div class="space-y-3">
             ${q.choices.map((c, ci) => `
-              <label class="choice-label" id="label${i}_${ci}">
-                <input type="radio" name="q${i}" value="${ci}" onchange="selectAnswer(${i}, ${ci})">
-                <span class="choice-letter">${letters[ci]}.</span>
-                <span>${c.replace(/^[กขคง]\.\s*/, '')}${q.choiceImages && q.choiceImages[ci] ? `<img src="${q.choiceImages[ci]}" style="max-width:160px;max-height:110px;border-radius:6px;margin-top:6px;display:block;">` : ''}</span>
+              <label class="choice-label group" id="label${i}_${ci}">
+                <input type="radio" name="q${i}" value="${ci}" onchange="selectAnswer(${i}, ${ci})" class="radio radio-primary radio-sm mt-1 mr-4 opacity-70 group-hover:opacity-100 transition-opacity">
+                <div class="flex-1">
+                  <span class="font-bold text-slate-400 mr-2">${letters[ci]}.</span>
+                  <span class="text-slate-700">${c.replace(/^[กขคง]\.\s*/, '')}</span>
+                  ${q.choiceImages && q.choiceImages[ci] ? `<img src="${q.choiceImages[ci]}" class="max-w-xs max-h-32 object-contain rounded-lg border border-slate-200 mt-3 block">` : ''}
+                </div>
               </label>
             `).join('')}
           </div>
         </div>
       `).join('');
+      AOS.init({ once: true, offset: 50 });
     }
 
     function selectAnswer(qIndex, choiceIndex) {
       userAnswers[qIndex] = choiceIndex;
-      // Update choice styling
-      const letters = ['ก', 'ข', 'ค', 'ง'];
       for (let ci = 0; ci < 4; ci++) {
         const lbl = document.getElementById(`label${qIndex}_${ci}`);
         if (lbl) lbl.classList.toggle('selected', ci === choiceIndex);
@@ -2094,7 +249,12 @@
 
     function scrollToQuestion(i) {
       const el = document.getElementById(`qblock${i}`);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (el) {
+        const headerOffset = 80;
+        const elementPosition = el.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+      }
     }
 
     // Timer
@@ -2102,45 +262,46 @@
       timerInterval = setInterval(() => {
         timeLeft--;
         const display = document.getElementById('timerDisplay');
+        const container = document.getElementById('timerDisplayContainer');
         display.textContent = formatTime(timeLeft);
-        if (timeLeft <= 300) display.classList.add('warning');
-        if (timeLeft <= 60) { display.classList.remove('warning'); display.classList.add('danger'); }
+        if (timeLeft <= 300 && timeLeft > 60) {
+          container.classList.add('timer-warning');
+        } else if (timeLeft <= 60 && timeLeft > 0) {
+          container.classList.remove('timer-warning');
+          container.classList.add('timer-danger');
+        }
         if (timeLeft <= 0) { clearInterval(timerInterval); submitExam(); }
       }, 1000);
-    }
-
-    function openModal() {
-      const answered = userAnswers.filter(a => a !== null).length;
-      const total = questions.length;
-      const allAnswered = answered === total;
-      document.getElementById('answeredCount').textContent = answered;
-      document.getElementById('totalCount').textContent = total;
-      document.getElementById('unansweredWarning').style.display = allAnswered ? 'none' : 'block';
-      const confirmBtn = document.getElementById('confirmSubmitBtn');
-      confirmBtn.disabled = !allAnswered;
-      confirmBtn.style.opacity = allAnswered ? '1' : '0.4';
-      confirmBtn.style.cursor = allAnswered ? 'pointer' : 'not-allowed';
-      document.getElementById('submitModal').classList.remove('hidden');
-    }
-
-    function closeModal() {
-      document.getElementById('submitModal').classList.add('hidden');
     }
 
     function toggleNav() {
       const nav = document.getElementById('examNav');
       const btn = document.getElementById('navToggleBtn');
-      const collapsed = nav.classList.toggle('collapsed');
-      btn.textContent = collapsed ? '▲' : '▼';
-      btn.title = collapsed ? 'แสดงความคืบหน้า' : 'ซ่อนความคืบหน้า';
+      const icon = btn.querySelector('i');
+      if (nav.classList.contains('translate-y-full')) {
+        nav.classList.remove('translate-y-full');
+        icon.className = 'fa-solid fa-chevron-down';
+      } else {
+        nav.classList.add('translate-y-full');
+        icon.className = 'fa-solid fa-chevron-up';
+      }
     }
 
     function openCancelModal() {
-      document.getElementById('cancelModal').classList.remove('hidden');
-    }
-
-    function closeCancelModal() {
-      document.getElementById('cancelModal').classList.add('hidden');
+      Swal.fire({
+        title: 'ยกเลิกการสอบ?',
+        text: "ความคืบหน้าทั้งหมดจะสูญหาย คุณต้องการกลับสู่หน้าหลักหรือไม่?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'ใช่, ยกเลิกและกลับหน้าหลัก',
+        cancelButtonText: 'ทำข้อสอบต่อ'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          cancelExam();
+        }
+      });
     }
 
     function cancelExam() {
@@ -2148,10 +309,38 @@
       window.location.href = 'dashboard.html';
     }
 
+    function openModal() {
+      const answered = userAnswers.filter(a => a !== null).length;
+      const total = questions.length;
+      const allAnswered = answered === total;
+      
+      let html = `<p class="mb-4 text-slate-600">คุณทำข้อสอบไปแล้ว <strong>${answered}</strong> จาก <strong>${total}</strong> ข้อ</p>`;
+      if (!allAnswered) {
+        html += `<div class="p-4 bg-red-50 text-red-600 rounded-xl text-sm mb-4 border border-red-100 flex items-center gap-3"><i class="fa-solid fa-triangle-exclamation text-2xl"></i> <div class="text-left">คุณยังมีข้อที่ไม่ได้ตอบ <strong>${total - answered}</strong> ข้อ<br>หากกดส่ง ข้อที่ไม่ได้ตอบจะถือว่าผิดทั้งหมด</div></div>`;
+      }
+      
+      Swal.fire({
+        title: 'ยืนยันการส่งข้อสอบ?',
+        html: html,
+        icon: allAnswered ? 'question' : 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#1a5276',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'ส่งข้อสอบ',
+        cancelButtonText: 'กลับไปตรวจสอบ'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          submitExam();
+        }
+      });
+    }
+
     async function submitExam() {
       if (examSubmitted) return;
       examSubmitted = true;
       clearInterval(timerInterval);
+
+      showLoading('กำลังบันทึกผลการสอบ...', 'กรุณารอสักครู่ ระบบกำลังประมวลผล');
 
       let score = 0;
       const details = questions.map((q, i) => {
@@ -2179,12 +368,13 @@
 
       saveResult(user.id, result);
       sessionStorage.setItem('plc_last_result', JSON.stringify(result));
-      // รอ Firebase บันทึกสำเร็จก่อน navigate (ป้องกัน race condition — history หายหลัง sync)
+      
       const _all = JSON.parse(localStorage.getItem('plc_history') || '{}');
       await Promise.race([
         fbWrite('plc_history/' + user.id, _all[user.id]),
         new Promise(r => setTimeout(r, 3000))
       ]).catch(() => {});
+      
       window.location.href = 'result.html';
     }
 
@@ -2201,14 +391,19 @@
       document.getElementById('reportQLabel').textContent = `ข้อที่ ${qIndex + 1}: ${questions[qIndex].text.slice(0, 60)}${questions[qIndex].text.length > 60 ? '…' : ''}`;
       document.getElementById('reportType').value = 'wrong_answer';
       document.getElementById('reportNote').value = '';
-      document.getElementById('reportStatus').style.display = 'none';
-      document.getElementById('reportSubmitBtn').disabled = false;
-      document.getElementById('reportSubmitBtn').textContent = '🚨 ส่งรายงาน';
-      document.getElementById('reportModal').classList.remove('hidden');
+      document.getElementById('reportStatus').classList.add('hidden');
+      
+      const btn = document.getElementById('reportSubmitBtn');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ส่งรายงาน';
+      
+      document.getElementById('reportModal').showModal();
     }
+    
     function closeReportModal() {
-      document.getElementById('reportModal').classList.add('hidden');
+      document.getElementById('reportModal').close();
     }
+    
     async function submitReport() {
       const qIndex  = parseInt(document.getElementById('reportQIndex').value);
       const type    = document.getElementById('reportType').value;
@@ -2218,7 +413,7 @@
       const btn     = document.getElementById('reportSubmitBtn');
 
       btn.disabled = true;
-      btn.textContent = '⏳ กำลังส่ง…';
+      btn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> กำลังส่ง...';
 
       const report = {
         id: 'r_' + Date.now(),
@@ -2237,20 +432,17 @@
         status: 'pending'
       };
 
-      // บันทึก localStorage ก่อนเสมอ
       const reports = JSON.parse(localStorage.getItem('plc_reports') || '[]');
       reports.unshift(report);
       localStorage.setItem('plc_reports', JSON.stringify(reports));
-      // sync ขึ้น Firebase
       fbWrite('plc_reports/' + report.id, report);
 
-      statusEl.style.display = 'block';
-      statusEl.style.color = '#1e8449';
-      statusEl.textContent = '✅ ส่งรายงานเรียบร้อย — ขอบคุณที่บอกให้ทราบ!';
+      statusEl.classList.remove('hidden');
+      statusEl.className = 'text-sm font-bold text-center mb-4 text-green-600';
+      statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> ส่งรายงานเรียบร้อย ขอบคุณที่แจ้งปัญหา!';
+      
       setTimeout(() => closeReportModal(), 1800);
     }
   </script>
-
-
-</body></html>
-
+</body>
+</html>

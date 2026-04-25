@@ -1,0 +1,6 @@
+- [x] Clean up `assets/style.css` and add custom utilities
+- [x] Add global loading functions to `assets/app.js`
+- [x] Redesign `index.html` (Login/Register)
+- [x] Redesign `dashboard.html`
+- [x] Redesign `exam.html`
+- [x] Redesign `admin.html`
