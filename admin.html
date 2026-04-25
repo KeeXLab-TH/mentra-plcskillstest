@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0036)https://plcskilltest.pages.dev/admin -->
+<!-- saved from url=(0036)https://mentra-plcskillstest.vercel.app/admin -->
 <html lang="th"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2625,7 +2625,7 @@
     function saveLocalReports(reports) {
       localStorage.setItem('plc_reports', JSON.stringify(reports));
       // เขียนไป Firebase สรุปทั้ง key
-      const fbUrl = localStorage.getItem('plc_firebase_url') || 'https://plcskilltest-default-rtdb.firebaseio.com';
+      const fbUrl = localStorage.getItem('plc_firebase_url') || 'https://mentra-plcskillstest-default-rtdb.asia-southeast1.firebasedatabase.app';
       fetch(fbUrl + '/plc_reports.json', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },

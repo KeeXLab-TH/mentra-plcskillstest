@@ -170,7 +170,7 @@ function compressImage(dataUrl, callback) {
 }
 
 // ====== Firebase Realtime Database Sync ======
-const _FB_DEFAULT_URL = 'https://plcskilltest-default-rtdb.firebaseio.com';
+const _FB_DEFAULT_URL = 'https://mentra-plcskillstest-default-rtdb.asia-southeast1.firebasedatabase.app';
 
 function fbGetUrl() {
   return (localStorage.getItem('plc_firebase_url') || _FB_DEFAULT_URL).replace(/\/$/, '');
