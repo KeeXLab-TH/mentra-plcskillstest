@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<!-- saved from url=(0040)https://plcskilltest.pages.dev/dashboard -->
+<html lang="th"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>หน้าหลัก - ระบบฝึกทำข้อสอบ PLC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link href="./assets/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+  <!-- Background Shapes -->
+  <div class="shape-1 floating-shape"></div>
+  <div class="shape-2 floating-shape"></div>
+  <nav class="navbar">
+    <div class="navbar-brand" style="display:flex; align-items:center; gap:12px;">
+      <img src="logo.png" alt="Logo" style="height:40px; object-fit:contain; border-radius:4px; background:#fff; padding:2px;">
+      <span style="font-size:1.1rem;">ศูนย์ทดสอบมาตรฐานฝีมือแรงงาน <span>PLC</span></span>
+    </div>
+    <div class="navbar-right">
+      <span class="navbar-user" id="navUserName">ธนภูมิ แดงประดับ</span>
+      <button class="btn-logout" onclick="logout()">ออกจากระบบ</button>
+    </div>
+  </nav>
+
+  <div class="dashboard-hero gsap-reveal">
+    <div class="container">
+      <h2 id="heroGreeting">สวัสดี, ธนภูมิ แดงประดับ!</h2>
+      <p>มาตรฐานฝีมือแรงงานแห่งชาติ สาขาช่างโปรแกรมเมเบิ้ลลอจิกคอนโทรลเลอร์ ระดับ ๑</p>
+    </div>
+  </div>
+
+  <div class="container" style="padding-bottom:40px;">
+    <div class="stats-row" id="statsRow">
+          <div class="stat-card"><div class="stat-num">14</div><div class="stat-label">ชุดข้อสอบทั้งหมด</div></div>
+          <div class="stat-card"><div class="stat-num">0</div><div class="stat-label">ชุดที่ทำแล้ว</div></div>
+          <div class="stat-card"><div class="stat-num" style="color:var(--success)">0</div><div class="stat-label">ชุดที่ผ่าน</div></div>
+          <div class="stat-card"><div class="stat-num">0</div><div class="stat-label">จำนวนครั้งทั้งหมด</div></div>
+        </div>
+
+    <!-- Branch Tabs -->
+    <div id="branchTabs" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;"><button id="branchBtn_plc" style="padding: 14px 20px; border-radius: 12px; border: 2px solid rgb(26, 82, 118); background: rgb(235, 245, 251); cursor: pointer; text-align: left; flex: 1 1 0%; min-width: 220px; font-family: inherit; transition: 0.2s; box-shadow: rgba(26, 82, 118, 0.15) 0px 4px 16px;"><div style="font-size:1.3rem;margin-bottom:4px;">⚡</div>
+          <div style="font-weight:700;font-size:0.9rem;color:#1a5276;">สาขาช่างควบคุมด้วยระบบโปรแกรมเมเบิ้ลลอจิกคอนโทรลเลอร์</div>
+          <div style="font-size:0.8rem;color:#7f8c8d;margin-top:2px;">ระดับ 1 &nbsp;·&nbsp; 9 ชุดข้อสอบ</div></button><button id="branchBtn_elec" style="padding: 14px 20px; border-radius: 12px; border: 2px solid rgb(220, 225, 231); background: rgb(255, 255, 255); cursor: pointer; text-align: left; flex: 1 1 0%; min-width: 220px; font-family: inherit; transition: 0.2s; box-shadow: none;"><div style="font-size:1.3rem;margin-bottom:4px;">🔌</div>
+          <div style="font-weight:700;font-size:0.9rem;color:#1a5276;">สาขาช่างไฟฟ้าภายในอาคาร</div>
+          <div style="font-size:0.8rem;color:#7f8c8d;margin-top:2px;">ระดับ 1 &nbsp;·&nbsp; 5 ชุดข้อสอบ</div></button></div>
+
+    <div class="section-title" id="setsHeading">⚡ สาขาช่างควบคุมด้วยระบบโปรแกรมเมเบิ้ลลอจิกคอนโทรลเลอร์</div>
+    <div class="section-sub" id="setsSubheading">ระดับ 1 • 9 ชุดข้อสอบ</div>
+
+    <div class="exam-sets-grid" id="examSetsGrid">
+            <div class="exam-set-card  " onclick="startExam(&#39;1&#39;)">
+              <div class="status-badge">ยังไม่ได้ทำ</div>
+              <div class="exam-set-num">01</div>
+              <div class="exam-set-title">ชุดที่ 1</div>
+              <div class="exam-set-meta"><div style="margin-bottom:6px;">ชนิดของการควบคุม วงจรลอจิก แผนภาพการทำงาน วงจรพื้นฐาน</div>
+                 <div style="font-size:0.78rem;color:var(--text-muted);">• หลักการควบคุม + วงจรลอจิก (10 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• อุปกรณ์ PLC + การเชื่อมต่อ (8 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การเขียนโปรแกรม (14 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การเดินสาย + ประกอบอุปกรณ์ (10 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การบำรุงรักษา + ความปลอดภัย (8 ข้อ)</div></div>
+              <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;">⏱ 60 นาที &nbsp;|&nbsp; ✅ ผ่าน 35 ข้อ</div>
+              
+              <div class="mt-16">
+                <button class="btn btn-primary" style="width:100%;">เริ่มทำข้อสอบ</button>
+              </div>
+            </div>
+            <div class="exam-set-card  " onclick="startExam(&#39;2&#39;)">
+              <div class="status-badge">ยังไม่ได้ทำ</div>
+              <div class="exam-set-num">02</div>
+              <div class="exam-set-title">ชุดที่ 2</div>
+              <div class="exam-set-meta"><div style="margin-bottom:6px;">คำศัพท์อุปกรณ์ PLC, CPU, Memory, I/O Module, Communication, Upload/Download</div>
+                 <div style="font-size:0.78rem;color:var(--text-muted);">• หลักการควบคุม + วงจรลอจิก (10 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• อุปกรณ์ PLC + การเชื่อมต่อ (8 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การเขียนโปรแกรม (14 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การเดินสาย + ประกอบอุปกรณ์ (10 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การบำรุงรักษา + ความปลอดภัย (8 ข้อ)</div></div>
+              <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;">⏱ 60 นาที &nbsp;|&nbsp; ✅ ผ่าน 35 ข้อ</div>
+              
+              <div class="mt-16">
+                <button class="btn btn-primary" style="width:100%;">เริ่มทำข้อสอบ</button>
+              </div>
+            </div>
+            <div class="exam-set-card  " onclick="startExam(&#39;3&#39;)">
+              <div class="status-badge">ยังไม่ได้ทำ</div>
+              <div class="exam-set-num">03</div>
+              <div class="exam-set-title">ชุดที่ 3</div>
+              <div class="exam-set-meta"><div style="margin-bottom:6px;">คำศัพท์การเขียนโปรแกรม, ฟังก์ชันคำสั่ง, I/O Planning, ซอฟต์แวร์</div>
+                 <div style="font-size:0.78rem;color:var(--text-muted);">• หลักการควบคุม + วงจรลอจิก (10 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• อุปกรณ์ PLC + การเชื่อมต่อ (8 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การเขียนโปรแกรม (14 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การเดินสาย + ประกอบอุปกรณ์ (10 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การบำรุงรักษา + ความปลอดภัย (8 ข้อ)</div></div>
+              <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;">⏱ 60 นาที &nbsp;|&nbsp; ✅ ผ่าน 35 ข้อ</div>
+              
+              <div class="mt-16">
+                <button class="btn btn-primary" style="width:100%;">เริ่มทำข้อสอบ</button>
+              </div>
+            </div>
+            <div class="exam-set-card  " onclick="startExam(&#39;4&#39;)">
+              <div class="status-badge">ยังไม่ได้ทำ</div>
+              <div class="exam-set-num">04</div>
+              <div class="exam-set-title">ชุดที่ 4</div>
+              <div class="exam-set-meta"><div style="margin-bottom:6px;">การเลือกอุปกรณ์, การเข้าหัวสาย, การบัดกรี, แนวเดินสาย, การตรวจสอบ I/O</div>
+                 <div style="font-size:0.78rem;color:var(--text-muted);">• หลักการควบคุม + วงจรลอจิก (10 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• อุปกรณ์ PLC + การเชื่อมต่อ (8 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การเขียนโปรแกรม (14 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การเดินสาย + ประกอบอุปกรณ์ (10 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การบำรุงรักษา + ความปลอดภัย (8 ข้อ)</div></div>
+              <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;">⏱ 60 นาที &nbsp;|&nbsp; ✅ ผ่าน 35 ข้อ</div>
+              
+              <div class="mt-16">
+                <button class="btn btn-primary" style="width:100%;">เริ่มทำข้อสอบ</button>
+              </div>
+            </div>
+            <div class="exam-set-card  " onclick="startExam(&#39;5&#39;)">
+              <div class="status-badge">ยังไม่ได้ทำ</div>
+              <div class="exam-set-num">05</div>
+              <div class="exam-set-title">ชุดที่ 5</div>
+              <div class="exam-set-meta"><div style="margin-bottom:6px;">การบำรุงรักษา PLC, ความผิดปกติฮาร์ดแวร์/ซอฟต์แวร์, ความปลอดภัยในการทำงาน</div>
+                 <div style="font-size:0.78rem;color:var(--text-muted);">• หลักการควบคุม + วงจรลอจิก (10 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• อุปกรณ์ PLC + การเชื่อมต่อ (8 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การเขียนโปรแกรม (14 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การเดินสาย + ประกอบอุปกรณ์ (10 ข้อ)</div><div style="font-size:0.78rem;color:var(--text-muted);">• การบำรุงรักษา + ความปลอดภัย (8 ข้อ)</div></div>
+              <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;">⏱ 60 นาที &nbsp;|&nbsp; ✅ ผ่าน 35 ข้อ</div>
+              
+              <div class="mt-16">
+                <button class="btn btn-primary" style="width:100%;">เริ่มทำข้อสอบ</button>
+              </div>
+            </div>
+            <div class="exam-set-card  " onclick="startExam(&#39;c1776840978915&#39;)">
+              <div class="status-badge">ยังไม่ได้ทำ</div>
+              <div class="exam-set-num">✏</div>
+              <div class="exam-set-title">ข้อสอบเสมือนจริงชุด A</div>
+              <div class="exam-set-meta"><div style="margin-bottom:4px;"></div>
+               <div style="font-size:0.78rem;color:var(--text-muted);">📝 60 ข้อ</div></div>
+              <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;">⏱ 60 นาที &nbsp;|&nbsp; ✅ ผ่าน 42 ข้อ</div>
+              
+              <div class="mt-16">
+                <button class="btn btn-primary" style="width:100%;">เริ่มทำข้อสอบ</button>
+              </div>
+            </div>
+            <div class="exam-set-card  " onclick="startExam(&#39;c1776847227471&#39;)">
+              <div class="status-badge">ยังไม่ได้ทำ</div>
+              <div class="exam-set-num">✏</div>
+              <div class="exam-set-title">ข้อสอบเสมือนจริงชุด B</div>
+              <div class="exam-set-meta"><div style="margin-bottom:4px;"></div>
+               <div style="font-size:0.78rem;color:var(--text-muted);">📝 50 ข้อ</div></div>
+              <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;">⏱ 60 นาที &nbsp;|&nbsp; ✅ ผ่าน 35 ข้อ</div>
+              
+              <div class="mt-16">
+                <button class="btn btn-primary" style="width:100%;">เริ่มทำข้อสอบ</button>
+              </div>
+            </div>
+            <div class="exam-set-card  " onclick="startExam(&#39;c1776847276580&#39;)">
+              <div class="status-badge">ยังไม่ได้ทำ</div>
+              <div class="exam-set-num">✏</div>
+              <div class="exam-set-title">ข้อสอบเสมือนจริงชุด C</div>
+              <div class="exam-set-meta"><div style="margin-bottom:4px;"></div>
+               <div style="font-size:0.78rem;color:var(--text-muted);">📝 50 ข้อ</div></div>
+              <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;">⏱ 60 นาที &nbsp;|&nbsp; ✅ ผ่าน 35 ข้อ</div>
+              
+              <div class="mt-16">
+                <button class="btn btn-primary" style="width:100%;">เริ่มทำข้อสอบ</button>
+              </div>
+            </div>
+            <div class="exam-set-card  " onclick="startExam(&#39;c1776952011884&#39;)">
+              <div class="status-badge">ยังไม่ได้ทำ</div>
+              <div class="exam-set-num">✏</div>
+              <div class="exam-set-title">ข้อสอบชุด D</div>
+              <div class="exam-set-meta"><div style="margin-bottom:4px;">ข้อสอบมี 40 ข้อ ผ่าน 27 ข้อ</div>
+               <div style="font-size:0.78rem;color:var(--text-muted);">📝 40 ข้อ</div></div>
+              <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;">⏱ 50 นาที &nbsp;|&nbsp; ✅ ผ่าน 27 ข้อ</div>
+              
+              <div class="mt-16">
+                <button class="btn btn-primary" style="width:100%;">เริ่มทำข้อสอบ</button>
+              </div>
+            </div></div>
+    <div id="emptyBranch" class="hidden" style="text-align:center;padding:48px 24px;color:#7f8c8d;background:#fff;border-radius:12px;border:2px dashed #dce1e7;">
+      <div style="font-size:2.5rem;margin-bottom:12px;">📋</div>
+      <p style="font-size:1rem;margin-bottom:4px;">ยังไม่มีชุดข้อสอบในสาขานี้</p>
+      <p style="font-size:0.88rem;">รอแอดมินเพิ่มชุดข้อสอบ</p>
+    </div>
+  </div>
+
+  <script src="./assets/questions_set1.js"></script>
+  <script src="./assets/questions_set2.js"></script>
+  <script src="./assets/questions_set3.js"></script>
+  <script src="./assets/questions_set4.js"></script>
+  <script src="./assets/questions_set5.js"></script>
+  <script src="./assets/elec_set1.js"></script>
+  <script src="./assets/elec_set2.js"></script>
+  <script src="./assets/elec_set3.js"></script>
+  <script src="./assets/elec_set4.js"></script>
+  <script src="./assets/elec_set5.js"></script>
+  <script src="./assets/app.js"></script>
+  <script>
+    const user = requireAuth();
+    let currentBranch = BRANCHES[0].id; // default: plc
+    if (user) {
+      document.getElementById('navUserName').textContent = user.name;
+      document.getElementById('heroGreeting').textContent = `สวัสดี, ${user.name}!`;
+
+      const history = getHistory(user.id);
+      const attemptedSets = new Set(history.map(h => String(h.setId)));
+      const passedSets    = new Set(history.filter(h => h.passed).map(h => String(h.setId)));
+      const bestScores = {};
+      history.forEach(h => {
+        const k = String(h.setId);
+        if (!bestScores[k] || h.score > bestScores[k]) bestScores[k] = h.score;
+      });
+
+      // Stats (across all branches)
+      const allSets = getAllExamSets();
+      document.getElementById('statsRow').innerHTML = `
+        <div class="stat-card"><div class="stat-num">${allSets.length}</div><div class="stat-label">ชุดข้อสอบทั้งหมด</div></div>
+        <div class="stat-card"><div class="stat-num">${attemptedSets.size}</div><div class="stat-label">ชุดที่ทำแล้ว</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--success)">${passedSets.size}</div><div class="stat-label">ชุดที่ผ่าน</div></div>
+        <div class="stat-card"><div class="stat-num">${history.length}</div><div class="stat-label">จำนวนครั้งทั้งหมด</div></div>
+      `;
+
+      // Render Branch Tabs
+      const tabsEl = document.getElementById('branchTabs');
+      BRANCHES.forEach(b => {
+        const count = getExamSetsByBranch(b.id).length;
+        const btn = document.createElement('button');
+        btn.id = 'branchBtn_' + b.id;
+        btn.onclick = () => { currentBranch = b.id; renderBranchTabs(); renderGrid(); };
+        btn.style.cssText = 'padding:14px 20px;border-radius:12px;border:2px solid #dce1e7;background:#fff;cursor:pointer;text-align:left;flex:1;min-width:220px;font-family:inherit;transition:all 0.2s;';
+        btn.innerHTML = `<div style="font-size:1.3rem;margin-bottom:4px;">${b.icon}</div>
+          <div style="font-weight:700;font-size:0.9rem;color:#1a5276;">${b.title}</div>
+          <div style="font-size:0.8rem;color:#7f8c8d;margin-top:2px;">${b.level} &nbsp;·&nbsp; ${count} ชุดข้อสอบ</div>`;
+        tabsEl.appendChild(btn);
+      });
+
+      function renderBranchTabs() {
+        BRANCHES.forEach(b => {
+          const btn = document.getElementById('branchBtn_' + b.id);
+          if (!btn) return;
+          if (b.id === currentBranch) {
+            btn.style.borderColor = '#1a5276';
+            btn.style.background = '#ebf5fb';
+            btn.style.boxShadow = '0 4px 16px rgba(26,82,118,0.15)';
+          } else {
+            btn.style.borderColor = '#dce1e7';
+            btn.style.background = '#fff';
+            btn.style.boxShadow = 'none';
+          }
+        });
+      }
+
+      function renderGrid() {
+        const branch = BRANCHES.find(b => b.id === currentBranch);
+        const sets = getExamSetsByBranch(currentBranch);
+        document.getElementById('setsHeading').textContent = `${branch.icon} ${branch.title}`;
+        document.getElementById('setsSubheading').textContent = `${branch.level} • ${sets.length} ชุดข้อสอบ`;
+
+        const grid = document.getElementById('examSetsGrid');
+        const emptyEl = document.getElementById('emptyBranch');
+        grid.innerHTML = '';
+
+        if (!sets.length) { emptyEl.classList.remove('hidden'); return; }
+        emptyEl.classList.add('hidden');
+
+        sets.forEach(set => {
+          const isPlcBuiltin = !!ALL_EXAM_SETS.find(s => s.id == set.id);
+          const isElecBuiltin = !!ALL_ELEC_SETS.find(s => s.id == set.id);
+          const isBuiltin = isPlcBuiltin || isElecBuiltin;
+          const isCustom = !isBuiltin;
+          const key = String(set.id);
+          const best = bestScores[key];
+          const passed  = passedSets.has(key);
+          const attempted = attemptedSets.has(key);
+          let statusLabel = 'ยังไม่ได้ทำ';
+          let cardClass = '';
+          if (attempted && passed)  { statusLabel = 'ผ่านแล้ว';    cardClass = 'passed'; }
+          else if (attempted)       { statusLabel = 'ยังไม่ผ่าน'; cardClass = 'failed'; }
+
+          const ss = getSetSettings(set.id);
+          const timeLabel = ss ? ss.timeMinutes : (set.timeMinutes || (isPlcBuiltin ? EXAM_TIME_MINUTES : 60));
+          const passLabel = ss ? ss.passScore   : (set.passScore   || (isPlcBuiltin ? PASS_SCORE       : 42));
+          const qCount    = (set.questions || []).length || TOTAL_QUESTIONS;
+          const displayTitle = isCustom
+            ? set.title
+            : ((ss && ss.title) ? ss.title : (isPlcBuiltin ? `ชุดที่ ${set.id}` : (set.title || `ชุดที่ ${set.id}`)));
+          const builtInDesc  = (ss && ss.description != null && ss.description !== '') ? ss.description : (set.description || 'ครอบคลุมทุกหัวข้อตามสัดส่วน');
+          const setNumDisplay = isCustom ? '✏' : (isPlcBuiltin ? '0' + set.id : String(set.id).replace('e',''));
+          const metaHtml = isCustom
+            ? `<div style="margin-bottom:4px;">${set.description || ''}</div>
+               <div style="font-size:0.78rem;color:var(--text-muted);">📝 ${qCount} ข้อ</div>`
+            : isPlcBuiltin
+              ? `<div style="margin-bottom:6px;">${builtInDesc}</div>
+                 ${TOPIC_DISTRIBUTION.map(t => `<div style="font-size:0.78rem;color:var(--text-muted);">• ${t.label} (${t.count} ข้อ)</div>`).join('')}`
+              : `<div style="margin-bottom:6px;">${builtInDesc}</div>
+                 <div style="font-size:0.78rem;color:var(--text-muted);">📝 ${qCount} ข้อ</div>`;
+
+          grid.innerHTML += `
+            <div class="exam-set-card gsap-stagger ${cardClass} ${attempted ? 'completed' : ''}" onclick="startExam('${set.id}')">
+              <div class="status-badge">${statusLabel}</div>
+              <div class="exam-set-num">${setNumDisplay}</div>
+              <div class="exam-set-title">${displayTitle}</div>
+              <div class="exam-set-meta">${metaHtml}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;">⏱ ${timeLabel} นาที &nbsp;|&nbsp; ✅ ผ่าน ${passLabel} ข้อ</div>
+              ${best !== undefined ? `<div class="exam-set-score">คะแนนสูงสุด: <strong>${best}/${qCount}</strong> คะแนน</div>` : ''}
+              <div class="mt-16">
+                <button class="btn btn-primary" style="width:100%;">เริ่มทำข้อสอบ</button>
+              </div>
+            </div>`;
+        });
+      }
+
+      renderBranchTabs();
+      renderGrid();
+
+      // sync Firebase ใน background แล้ว re-render ถ้ามี custom sets ใหม่
+      syncAllFromFirebase().then(() => {
+        renderBranchTabs();
+        renderGrid();
+        // อัปเดต stats ด้วย
+        const allSets2 = getAllExamSets();
+        const history2 = getHistory(user.id);
+        const attempted2 = new Set(history2.map(h => String(h.setId)));
+        const passed2    = new Set(history2.filter(h => h.passed).map(h => String(h.setId)));
+        document.getElementById('statsRow').innerHTML = `
+          <div class="stat-card"><div class="stat-num">${allSets2.length}</div><div class="stat-label">ชุดข้อสอบทั้งหมด</div></div>
+          <div class="stat-card"><div class="stat-num">${attempted2.size}</div><div class="stat-label">ชุดที่ทำแล้ว</div></div>
+          <div class="stat-card"><div class="stat-num" style="color:var(--success)">${passed2.size}</div><div class="stat-label">ชุดที่ผ่าน</div></div>
+          <div class="stat-card"><div class="stat-num">${history2.length}</div><div class="stat-label">จำนวนครั้งทั้งหมด</div></div>
+        `;
+      }).catch(() => {});
+    }
+
+    function startExam(setId) {
+      sessionStorage.setItem('plc_current_set', setId);
+      window.location.href = 'exam.html';
+    }
+  </script>
+
+
+</body></html>
