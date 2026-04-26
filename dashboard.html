@@ -271,14 +271,6 @@
         setTimeout(() => { panel.classList.remove('scale-95', 'opacity-0'); panel.classList.add('scale-100', 'opacity-100'); }, 10);
         toggleIcon.className = 'fa-solid fa-chevron-down text-2xl';
         document.getElementById('aiChatInput').focus();
-        // Check API key
-        if (!getGeminiApiKey()) {
-          document.getElementById('aiApiKeyWarning').classList.remove('hidden');
-          document.getElementById('aiChatInput').disabled = true;
-          document.getElementById('aiChatSendBtn').disabled = true;
-        } else {
-          document.getElementById('aiApiKeyWarning').classList.add('hidden');
-        }
       } else {
         panel.classList.remove('scale-100', 'opacity-100');
         panel.classList.add('scale-95', 'opacity-0');
@@ -421,9 +413,6 @@
       
       <!-- Input Area -->
       <div class="p-3 bg-white border-t border-slate-100 shadow-[0_-10px_20px_rgba(0,0,0,0.02)] z-10">
-        <div id="aiApiKeyWarning" class="text-[10px] text-error text-center mb-2 hidden">
-          <i class="fa-solid fa-triangle-exclamation"></i> ไม่พบ API Key กรุณาให้ผู้ดูแลระบบตั้งค่า
-        </div>
         <form id="aiChatForm" class="flex gap-2" onsubmit="handleAiChatSubmit(event)">
           <input type="text" id="aiChatInput" class="input input-bordered input-sm flex-1 rounded-full bg-slate-50 focus:bg-white transition-colors" placeholder="พิมพ์คำถามที่นี่..." autocomplete="off">
           <button type="submit" class="btn btn-primary btn-sm btn-circle bg-gradient-to-br from-primary to-blue-800 border-none shadow-md" id="aiChatSendBtn">

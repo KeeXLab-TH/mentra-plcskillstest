@@ -350,20 +350,6 @@
           <div id="fbConfigStatus" class="mt-3 text-sm font-bold hidden"></div>
         </div>
 
-        <!-- AI Chat Settings -->
-        <div class="glass-card p-6 rounded-3xl border border-slate-200 bg-white">
-          <h3 class="text-lg font-bold text-slate-800 mb-4"><i class="fa-solid fa-robot text-primary"></i> ตั้งค่า AI Chat (Gemini)</h3>
-          <p class="text-sm text-slate-500 mb-4">ใส่ API Key ของ Google Gemini เพื่อเปิดใช้งาน AI ผู้ช่วยในหน้านักศึกษา</p>
-          <div class="form-control w-full mb-4">
-            <input type="password" id="geminiApiKeyInput" class="input input-bordered w-full" placeholder="AIzaSy...">
-          </div>
-          <div class="flex gap-2">
-            <button class="btn btn-sm btn-primary" onclick="saveGeminiKey()">บันทึก API Key</button>
-            <button class="btn btn-sm btn-error btn-outline" onclick="resetGeminiKey()">ล้างค่า</button>
-          </div>
-          <div id="geminiStatus" class="mt-3 text-sm font-bold text-success hidden"><i class="fa-solid fa-check"></i> บันทึก API Key แล้ว</div>
-        </div>
-
         <!-- Answer Review Settings -->
         <div class="glass-card p-6 rounded-3xl border border-slate-200 bg-white">
           <h3 class="text-lg font-bold text-slate-800 mb-4"><i class="fa-solid fa-magnifying-glass-chart text-secondary"></i> การแสดงเฉลย</h3>
@@ -441,7 +427,6 @@
     // Settings
     document.getElementById('fbUrlInput').value = localStorage.getItem('plc_firebase_url') || '';
     document.getElementById('siteLogoInput').value = localStorage.getItem('plc_site_logo') || '';
-    document.getElementById('geminiApiKeyInput').value = getGeminiApiKey();
     const allowReview = getReviewSetting();
     document.getElementById('allowReviewToggle').checked = allowReview;
     document.getElementById('allowReviewLabel').textContent = allowReview ? 'เปิดให้ดูเฉลย' : 'ปิดการดูเฉลย';
@@ -943,17 +928,6 @@
     }
 
     // Tools
-    function saveGeminiKey() {
-      const val = document.getElementById('geminiApiKeyInput').value.trim();
-      setGeminiApiKey(val);
-      const st = document.getElementById('geminiStatus');
-      st.classList.remove('hidden');
-      setTimeout(() => st.classList.add('hidden'), 3000);
-    }
-    function resetGeminiKey() {
-      setGeminiApiKey('');
-      document.getElementById('geminiApiKeyInput').value = '';
-    }
     function toggleAllowReview() {
       const isChecked = document.getElementById('allowReviewToggle').checked;
       setReviewSetting(isChecked);

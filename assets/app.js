@@ -334,8 +334,5 @@ function setReviewSetting(val) {
 
 // ====== AI Chat (Gemini API Key) ======
 function getGeminiApiKey() {
-  return localStorage.getItem('plc_gemini_api_key') || '';
-}
-function setGeminiApiKey(key) {
-  localStorage.setItem('plc_gemini_api_key', key);
+  return 'AIzaSyD2GMAxdH0xzTBxisQTs3S36OH1fV3NmAY';
 }
