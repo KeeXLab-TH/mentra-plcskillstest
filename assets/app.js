@@ -130,6 +130,29 @@ function getAllExamSets() {
   return [...ALL_EXAM_SETS, ...ALL_ELEC_SETS, ...getCustomSets()];
 }
 
+// ====== Built-in Sets Overrides ======
+function getBuiltinOverrides() {
+  return JSON.parse(localStorage.getItem('plc_builtin_overrides') || '{}');
+}
+function saveBuiltinOverride(setId, data) {
+  const overrides = getBuiltinOverrides();
+  overrides[setId] = data;
+  localStorage.setItem('plc_builtin_overrides', JSON.stringify(overrides));
+  fbSyncKey('plc_builtin_overrides');
+  applyBuiltinOverrides();
+}
+function applyBuiltinOverrides() {
+  const overrides = getBuiltinOverrides();
+  [...ALL_EXAM_SETS, ...ALL_ELEC_SETS].forEach(set => {
+    if (overrides[set.id]) {
+      Object.assign(set, overrides[set.id]);
+    }
+  });
+}
+// Apply overrides immediately on load
+applyBuiltinOverrides();
+
+
 // ====== Per-Set Settings Override (time / passScore) ======
 function getSetSettings(setId) {
   const all = JSON.parse(localStorage.getItem('plc_set_settings') || '{}');
@@ -231,7 +254,7 @@ async function syncAllFromFirebase() {
   const url = fbGetUrl();
   if (!url) return;
   try {
-    const keys = ['plc_users', 'plc_history', 'plc_custom_sets', 'plc_set_settings', 'plc_draft_sets', 'plc_reports'];
+    const keys = ['plc_users', 'plc_history', 'plc_custom_sets', 'plc_builtin_overrides', 'plc_set_settings', 'plc_draft_sets', 'plc_reports'];
     const results = await Promise.all(keys.map(k => fbRead(k).then(d => [k, d])));
     results.forEach(([key, data]) => {
       if (data === null) return;
@@ -258,6 +281,8 @@ async function syncAllFromFirebase() {
     });
     // หลัง sync ให้ syncUsersFromFirebase ใส่ admin/guest กลับ (ป้องกันหายหลัง overwrite)
     await syncUsersFromFirebase();
+    // นำ override มาใช้กับชุดข้อสอบพื้นฐานหลัง sync
+    applyBuiltinOverrides();
   } catch(e) { /* silent */ }
 }
 

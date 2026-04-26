@@ -703,8 +703,8 @@
       list.innerHTML = '';
       
       if (isEditingBuiltin) {
-        list.innerHTML = '<div class="alert alert-info"><i class="fa-solid fa-circle-info mr-2"></i>ข้อสอบระบบพื้นฐานไม่สามารถแก้ไขรายข้อได้ สามารถตั้งค่าได้เฉพาะ เวลาสอบ, เกณฑ์ผ่าน, การแสดงผล เท่านั้น</div>';
-        return;
+        // Builtin sets can now be edited, so we don't show the warning and we allow rendering.
+        // Removed the early return and alert.
       }
 
       editQuestions.forEach((q, i) => {
@@ -776,7 +776,16 @@
         settings[id] = { title, timeMinutes: time, passScore: pass, draft };
         localStorage.setItem('plc_set_settings', JSON.stringify(settings));
         fbWrite('plc_set_settings', settings);
-        Swal.fire({icon:'success', title:'บันทึกสำเร็จ', timer:1500, showConfirmButton:false});
+        
+        // Save the full overridden set
+        const overriddenSet = {
+            id, title, description: document.getElementById('editSetDesc').value,
+            timeMinutes: time, passScore: pass, draft,
+            questions: editQuestions
+        };
+        saveBuiltinOverride(id, overriddenSet);
+        
+        Swal.fire({icon:'success', title:'บันทึกชุดข้อสอบพื้นฐานสำเร็จ', timer:1500, showConfirmButton:false});
         closeSetEditor();
         renderSetsList();
         return;
@@ -811,21 +820,21 @@
       
       document.getElementById('setListView').style.display = 'none';
       document.getElementById('setEditorView').style.display = 'block';
-      document.getElementById('editorTitle').textContent = 'ตั้งค่าชุดข้อสอบระบบพื้นฐาน';
+      document.getElementById('editorTitle').textContent = 'แก้ไขชุดข้อสอบระบบพื้นฐาน';
       
       document.getElementById('editSetId').value = id;
       document.getElementById('editSetTitle').value = ss.title || set.title || `ชุดที่ ${id}`;
       document.getElementById('editSetDesc').value = ss.description || set.description || '';
       document.getElementById('editSetTime').value = ss.timeMinutes || set.timeMinutes || 60;
       document.getElementById('editSetPassScore').value = ss.passScore || set.passScore || 42;
-      document.getElementById('editSetDraft').checked = ss.draft || false;
+      document.getElementById('editSetDraft').checked = ss.draft || set.draft || false;
       
       document.getElementById('editSetTitle').disabled = false;
       document.getElementById('editSetBranch').disabled = true;
-      document.getElementById('importText').parentElement.style.display = 'none';
-      document.querySelector('button[onclick="addBlankQuestion()"]').style.display = 'none';
+      document.getElementById('importText').parentElement.style.display = 'block';
+      document.querySelector('button[onclick="addBlankQuestion()"]').style.display = 'inline-flex';
       
-      editQuestions = [];
+      editQuestions = JSON.parse(JSON.stringify(set.questions || []));
       renderEditorQuestions();
     }
 
@@ -1025,7 +1034,7 @@
       if (source === 'firebase') {
         fbRead('').then(data => doBackup(data || {})).catch(() => { st.className='mt-2 text-xs font-bold text-error'; st.innerHTML='ไม่สามารถดึงจาก Firebase'; });
       } else {
-        const keys = ['plc_users','plc_history','plc_custom_sets','plc_set_settings','plc_reports'];
+        const keys = ['plc_users','plc_history','plc_custom_sets','plc_builtin_overrides','plc_set_settings','plc_reports'];
         const data = {}; keys.forEach(k => { try { data[k] = JSON.parse(localStorage.getItem(k)||'null'); } catch(e){} });
         doBackup(data);
       }
