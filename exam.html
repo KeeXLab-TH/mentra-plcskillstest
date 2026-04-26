@@ -7,25 +7,25 @@
   <link rel="preconnect" href="https://fonts.googleapis.com/">
   <link href="./assets/fonts.css" rel="stylesheet">
   <link rel="stylesheet" href="./assets/style.css">
-  
-  <!-- CDNs -->
   <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
   <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Sarabun', 'sans-serif'] },
-          colors: { primary: '#1a5276', secondary: '#fb923c' }
-        }
-      }
-    }
+    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Sarabun', 'sans-serif'] }, colors: { primary: '#1a5276', secondary: '#fb923c' } } } }
   </script>
+  <style>
+    .q-dot { width: 36px; height: 36px; min-width: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid #e2e8f0; font-weight: bold; font-size: 0.85rem; color: #64748b; cursor: pointer; transition: all 0.2s; background: white; }
+    .q-dot:hover { border-color: #cbd5e1; background: #f8fafc; transform: scale(1.1); }
+    .q-dot.answered { background-color: #1a5276; color: white; border-color: #1a5276; }
+    .choice-label { display: flex; padding: 14px 18px; border-radius: 14px; border: 2px solid #e2e8f0; margin-bottom: 10px; cursor: pointer; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); background-color: white; align-items: flex-start; }
+    .choice-label:hover { border-color: #cbd5e1; background-color: #f8fafc; transform: translateX(4px); }
+    .choice-label.selected { border-color: #fb923c; background-color: #fff7ed; transform: translateX(4px); box-shadow: 0 4px 12px rgba(251, 146, 60, 0.15); }
+    .timer-warning { color: #ea580c; animation: pulse 2s infinite; }
+    .timer-danger { color: #dc2626; animation: pulse 1s infinite; }
+  </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen relative pb-32">
   <!-- Sticky Header -->
@@ -40,17 +40,13 @@
         </div>
       </div>
     </div>
-    <!-- Progress bar -->
     <div class="h-1.5 w-full bg-slate-200">
-      <div class="h-full bg-secondary transition-all duration-300" id="progressFill" style="width: 0%;"></div>
+      <div class="h-full bg-gradient-to-r from-secondary to-orange-500 transition-all duration-300" id="progressFill" style="width: 0%;"></div>
     </div>
   </header>
 
   <div class="container mx-auto px-4 pt-24 max-w-4xl">
-    <!-- Questions List -->
-    <div id="examBody" class="space-y-8 pb-10">
-      <!-- Rendered by JS -->
-    </div>
+    <div id="examBody" class="space-y-8 pb-10"></div>
   </div>
 
   <!-- Bottom Navigation Bar -->
@@ -61,11 +57,8 @@
       </button>
     </div>
     <div class="container mx-auto p-4 flex flex-col md:flex-row gap-4 justify-between items-center">
-      <!-- Question Dots (Scrollable horizontally on mobile) -->
       <div class="flex-1 w-full overflow-x-auto pb-2 md:pb-0 hide-scrollbar" id="dotsContainer">
-        <div class="flex gap-2" id="questionDots">
-          <!-- Rendered by JS -->
-        </div>
+        <div class="flex gap-2" id="questionDots"></div>
       </div>
       <div class="flex-none flex gap-2 w-full md:w-auto">
         <button class="btn btn-error btn-outline flex-1 md:flex-none rounded-xl" onclick="openCancelModal()">
@@ -78,20 +71,18 @@
     </div>
   </div>
 
-  <!-- Report Modal (DaisyUI) -->
+  <!-- Report Modal -->
   <dialog id="reportModal" class="modal modal-bottom sm:modal-middle">
-    <div class="modal-box bg-white">
+    <div class="modal-box bg-white rounded-3xl">
       <h3 class="font-bold text-lg text-red-600 border-b pb-2 mb-4"><i class="fa-solid fa-triangle-exclamation"></i> แจ้งปัญหาข้อสอบ</h3>
       <input type="hidden" id="reportQIndex">
-      
       <div class="mb-4">
         <div class="text-sm text-slate-500 mb-1">ข้อที่กำลังแจ้งปัญหา:</div>
         <div class="p-3 bg-slate-50 rounded-lg text-sm text-slate-700 font-medium" id="reportQLabel">...</div>
       </div>
-
       <div class="form-control w-full mb-3">
         <label class="label"><span class="label-text font-bold text-slate-700">ประเภทปัญหา</span></label>
-        <select class="select select-bordered w-full" id="reportType">
+        <select class="select select-bordered w-full rounded-xl" id="reportType">
           <option value="wrong_answer">เฉลยผิด / ตัวเลือกผิด</option>
           <option value="typo">พิมพ์ผิด / อ่านไม่รู้เรื่อง</option>
           <option value="missing_image">รูปภาพไม่ขึ้น / ไม่ชัด</option>
@@ -99,50 +90,17 @@
           <option value="other">อื่นๆ</option>
         </select>
       </div>
-
       <div class="form-control w-full mb-4">
         <label class="label"><span class="label-text font-bold text-slate-700">รายละเอียดเพิ่มเติม (ถ้ามี)</span></label>
-        <textarea class="textarea textarea-bordered h-24" id="reportNote" placeholder="อธิบายเพิ่มเติมเพื่อให้แอดมินแก้ไขได้ตรงจุด..."></textarea>
+        <textarea class="textarea textarea-bordered h-24 rounded-xl" id="reportNote" placeholder="อธิบายเพิ่มเติม..."></textarea>
       </div>
-      
       <div id="reportStatus" class="text-sm font-bold text-center mb-4 hidden"></div>
-
       <div class="modal-action">
-        <button class="btn btn-ghost" onclick="closeReportModal()">ยกเลิก</button>
-        <button class="btn btn-error text-white" id="reportSubmitBtn" onclick="submitReport()"><i class="fa-solid fa-paper-plane"></i> ส่งรายงาน</button>
+        <button class="btn btn-ghost rounded-xl" onclick="closeReportModal()">ยกเลิก</button>
+        <button class="btn btn-error text-white rounded-xl" id="reportSubmitBtn" onclick="submitReport()"><i class="fa-solid fa-paper-plane"></i> ส่งรายงาน</button>
       </div>
     </div>
   </dialog>
-
-  <style>
-    /* Dots styling overriding some daisy/tailwind base */
-    .q-dot {
-      width: 36px; height: 36px; min-width: 36px;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 50%; border: 2px solid #e2e8f0;
-      font-weight: bold; font-size: 0.85rem; color: #64748b;
-      cursor: pointer; transition: all 0.2s; background: white;
-    }
-    .q-dot:hover { border-color: #cbd5e1; background: #f8fafc; }
-    .q-dot.answered {
-      background-color: #1a5276; color: white; border-color: #1a5276;
-    }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    .choice-label {
-      display: flex; padding: 12px 16px; border-radius: 12px;
-      border: 2px solid #e2e8f0; margin-bottom: 8px;
-      cursor: pointer; transition: all 0.2s;
-      background-color: white; align-items: flex-start;
-    }
-    .choice-label:hover { border-color: #cbd5e1; background-color: #f8fafc; }
-    .choice-label.selected {
-      border-color: #fb923c; background-color: #fff7ed;
-    }
-    .timer-warning { color: #ea580c; animation: pulse 2s infinite; }
-    .timer-danger { color: #dc2626; animation: pulse 1s infinite; }
-  </style>
 
   <script src="./assets/questions_set1.js"></script>
   <script src="./assets/questions_set2.js"></script>
@@ -161,8 +119,6 @@
     const examSet = getAllExamSets().find(s => s.id == setIdRaw);
     if (!examSet) { window.location.href = 'dashboard.html'; }
     const isCustomSet = !ALL_EXAM_SETS.find(s => s.id == setIdRaw) && !ALL_ELEC_SETS.find(s => s.id == setIdRaw);
-
-    // Apply per-set settings
     const _ss = getSetSettings(setIdRaw);
     const examPassScore = _ss ? _ss.passScore : (examSet.passScore || PASS_SCORE);
     const examTimeMinutes = _ss ? _ss.timeMinutes : (examSet.timeMinutes || EXAM_TIME_MINUTES);
@@ -180,11 +136,10 @@
     let timeLeft = examTimeMinutes * 60;
     let timerInterval;
     let examSubmitted = false;
+    const letters = ['ก', 'ข', 'ค', 'ง'];
 
-    // Render questions
     function renderQuestions() {
       const body = document.getElementById('examBody');
-      const letters = ['ก', 'ข', 'ค', 'ง'];
       body.innerHTML = questions.map((q, i) => `
         <div class="glass-card bg-white/90 p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200" id="qblock${i}" data-aos="fade-up">
           <div class="flex justify-between items-start gap-4 mb-4 border-b border-slate-100 pb-4">
@@ -221,125 +176,51 @@
         const lbl = document.getElementById(`label${qIndex}_${ci}`);
         if (lbl) lbl.classList.toggle('selected', ci === choiceIndex);
       }
-      updateDots();
-      updateProgress();
+      updateDots(); updateProgress();
     }
 
     function renderDots() {
-      const dots = document.getElementById('questionDots');
-      dots.innerHTML = questions.map((_, i) => `
-        <div class="q-dot" id="dot${i}" onclick="scrollToQuestion(${i})">${i + 1}</div>
-      `).join('');
+      document.getElementById('questionDots').innerHTML = questions.map((_, i) => `<div class="q-dot" id="dot${i}" onclick="scrollToQuestion(${i})">${i + 1}</div>`).join('');
     }
+    function updateDots() { questions.forEach((_, i) => { const dot = document.getElementById(`dot${i}`); if (dot) dot.classList.toggle('answered', userAnswers[i] !== null); }); }
+    function updateProgress() { const pct = (userAnswers.filter(a => a !== null).length / questions.length) * 100; document.getElementById('progressFill').style.width = pct + '%'; }
+    function scrollToQuestion(i) { const el = document.getElementById(`qblock${i}`); if (el) { window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - 80, behavior: 'smooth' }); } }
 
-    function updateDots() {
-      questions.forEach((_, i) => {
-        const dot = document.getElementById(`dot${i}`);
-        if (dot) {
-          dot.classList.toggle('answered', userAnswers[i] !== null);
-        }
-      });
-    }
-
-    function updateProgress() {
-      const answered = userAnswers.filter(a => a !== null).length;
-      const pct = (answered / questions.length) * 100;
-      document.getElementById('progressFill').style.width = pct + '%';
-    }
-
-    function scrollToQuestion(i) {
-      const el = document.getElementById(`qblock${i}`);
-      if (el) {
-        const headerOffset = 80;
-        const elementPosition = el.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
-      }
-    }
-
-    // Timer
     function startTimer() {
       timerInterval = setInterval(() => {
         timeLeft--;
         const display = document.getElementById('timerDisplay');
         const container = document.getElementById('timerDisplayContainer');
         display.textContent = formatTime(timeLeft);
-        if (timeLeft <= 300 && timeLeft > 60) {
-          container.classList.add('timer-warning');
-        } else if (timeLeft <= 60 && timeLeft > 0) {
-          container.classList.remove('timer-warning');
-          container.classList.add('timer-danger');
-        }
+        if (timeLeft <= 300 && timeLeft > 60) container.classList.add('timer-warning');
+        else if (timeLeft <= 60 && timeLeft > 0) { container.classList.remove('timer-warning'); container.classList.add('timer-danger'); }
         if (timeLeft <= 0) { clearInterval(timerInterval); submitExam(); }
       }, 1000);
     }
 
     function toggleNav() {
       const nav = document.getElementById('examNav');
-      const btn = document.getElementById('navToggleBtn');
-      const icon = btn.querySelector('i');
-      if (nav.classList.contains('translate-y-full')) {
-        nav.classList.remove('translate-y-full');
-        icon.className = 'fa-solid fa-chevron-down';
-      } else {
-        nav.classList.add('translate-y-full');
-        icon.className = 'fa-solid fa-chevron-up';
-      }
+      const icon = document.getElementById('navToggleBtn').querySelector('i');
+      if (nav.classList.contains('translate-y-full')) { nav.classList.remove('translate-y-full'); icon.className = 'fa-solid fa-chevron-down'; }
+      else { nav.classList.add('translate-y-full'); icon.className = 'fa-solid fa-chevron-up'; }
     }
 
     function openCancelModal() {
-      Swal.fire({
-        title: 'ยกเลิกการสอบ?',
-        text: "ความคืบหน้าทั้งหมดจะสูญหาย คุณต้องการกลับสู่หน้าหลักหรือไม่?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#e74c3c',
-        cancelButtonColor: '#95a5a6',
-        confirmButtonText: 'ใช่, ยกเลิกและกลับหน้าหลัก',
-        cancelButtonText: 'ทำข้อสอบต่อ'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          cancelExam();
-        }
-      });
-    }
-
-    function cancelExam() {
-      clearInterval(timerInterval);
-      window.location.href = 'dashboard.html';
+      Swal.fire({ title:'ยกเลิกการสอบ?', text:"ความคืบหน้าทั้งหมดจะสูญหาย", icon:'warning', showCancelButton:true, confirmButtonColor:'#e74c3c', cancelButtonColor:'#95a5a6', confirmButtonText:'ใช่, ยกเลิก', cancelButtonText:'ทำต่อ' }).then(r => { if(r.isConfirmed) { clearInterval(timerInterval); window.location.href='dashboard.html'; } });
     }
 
     function openModal() {
       const answered = userAnswers.filter(a => a !== null).length;
       const total = questions.length;
-      const allAnswered = answered === total;
-      
       let html = `<p class="mb-4 text-slate-600">คุณทำข้อสอบไปแล้ว <strong>${answered}</strong> จาก <strong>${total}</strong> ข้อ</p>`;
-      if (!allAnswered) {
-        html += `<div class="p-4 bg-red-50 text-red-600 rounded-xl text-sm mb-4 border border-red-100 flex items-center gap-3"><i class="fa-solid fa-triangle-exclamation text-2xl"></i> <div class="text-left">คุณยังมีข้อที่ไม่ได้ตอบ <strong>${total - answered}</strong> ข้อ<br>หากกดส่ง ข้อที่ไม่ได้ตอบจะถือว่าผิดทั้งหมด</div></div>`;
-      }
-      
-      Swal.fire({
-        title: 'ยืนยันการส่งข้อสอบ?',
-        html: html,
-        icon: allAnswered ? 'question' : 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#1a5276',
-        cancelButtonColor: '#95a5a6',
-        confirmButtonText: 'ส่งข้อสอบ',
-        cancelButtonText: 'กลับไปตรวจสอบ'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          submitExam();
-        }
-      });
+      if (answered < total) html += `<div class="p-4 bg-red-50 text-red-600 rounded-xl text-sm mb-4 border border-red-100 flex items-center gap-3"><i class="fa-solid fa-triangle-exclamation text-2xl"></i> <div class="text-left">ยังมีข้อที่ไม่ได้ตอบ <strong>${total-answered}</strong> ข้อ<br>หากกดส่ง จะถือว่าผิดทั้งหมด</div></div>`;
+      Swal.fire({ title:'ยืนยันการส่งข้อสอบ?', html, icon: answered===total?'question':'warning', showCancelButton:true, confirmButtonColor:'#1a5276', cancelButtonColor:'#95a5a6', confirmButtonText:'ส่งข้อสอบ', cancelButtonText:'กลับไปตรวจสอบ' }).then(r => { if(r.isConfirmed) submitExam(); });
     }
 
     async function submitExam() {
       if (examSubmitted) return;
       examSubmitted = true;
       clearInterval(timerInterval);
-
       showLoading('กำลังบันทึกผลการสอบ...', 'กรุณารอสักครู่ ระบบกำลังประมวลผล');
 
       let score = 0;
@@ -353,105 +234,57 @@
 
       const timeTaken = (examTimeMinutes * 60) - timeLeft;
       const passed = score >= examPassScore;
-
-      const result = {
-        setId: examSet.id,
-        setTitle: examSet.title || `ชุดที่ ${examSet.id}`,
-        score,
-        total: questions.length,
-        passed,
-        passScore: examPassScore,
-        timeTaken,
-        date: new Date().toISOString(),
-        details
-      };
+      const result = { setId: examSet.id, setTitle: examSet.title || `ชุดที่ ${examSet.id}`, score, total: questions.length, passed, passScore: examPassScore, timeTaken, date: new Date().toISOString(), details };
 
       saveResult(user.id, result);
       sessionStorage.setItem('plc_last_result', JSON.stringify(result));
-      
       const _all = JSON.parse(localStorage.getItem('plc_history') || '{}');
-      await Promise.race([
-        fbWrite('plc_history/' + user.id, _all[user.id]),
-        new Promise(r => setTimeout(r, 3000))
-      ]).catch(() => {});
-      
+      await Promise.race([fbWrite('plc_history/' + user.id, _all[user.id]), new Promise(r => setTimeout(r, 3000))]).catch(() => {});
       window.location.href = 'result.html';
     }
 
     // Init
     document.getElementById('examTitle').textContent = examSet.title || (isCustomSet ? examSet.title : `ชุดที่ ${examSet.id} | ครบทุกหัวข้อ ${questions.length} ข้อ`);
-    renderQuestions();
-    renderDots();
-    updateDots();
-    startTimer();
+    renderQuestions(); renderDots(); updateDots(); startTimer();
 
-    // ===== REPORT ISSUE =====
+    // Report
     function openReportModal(qIndex) {
       document.getElementById('reportQIndex').value = qIndex;
-      document.getElementById('reportQLabel').textContent = `ข้อที่ ${qIndex + 1}: ${questions[qIndex].text.slice(0, 60)}${questions[qIndex].text.length > 60 ? '…' : ''}`;
+      document.getElementById('reportQLabel').textContent = `ข้อที่ ${qIndex+1}: ${questions[qIndex].text.slice(0,60)}${questions[qIndex].text.length>60?'…':''}`;
       document.getElementById('reportType').value = 'wrong_answer';
       document.getElementById('reportNote').value = '';
       document.getElementById('reportStatus').classList.add('hidden');
-      
-      const btn = document.getElementById('reportSubmitBtn');
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ส่งรายงาน';
-      
+      const btn = document.getElementById('reportSubmitBtn'); btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-paper-plane"></i> ส่งรายงาน';
       document.getElementById('reportModal').showModal();
     }
-    
-    function closeReportModal() {
-      document.getElementById('reportModal').close();
-    }
-    
+    function closeReportModal() { document.getElementById('reportModal').close(); }
     async function submitReport() {
-      const qIndex  = parseInt(document.getElementById('reportQIndex').value);
-      const type    = document.getElementById('reportType').value;
-      const note    = document.getElementById('reportNote').value.trim().replace(/[<>"']/g, '');
-      const q       = questions[qIndex];
-      const statusEl = document.getElementById('reportStatus');
-      const btn     = document.getElementById('reportSubmitBtn');
-
-      btn.disabled = true;
-      btn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> กำลังส่ง...';
-
-      const report = {
-        id: 'r_' + Date.now(),
-        date: new Date().toISOString(),
-        reporterId: user.id,
-        reporterName: user.name,
-        reporterStudentId: user.studentId,
-        setId: examSet.id,
-        setTitle: examSet.title || `ชุดที่ ${examSet.id}`,
-        questionIndex: qIndex,
-        questionText: q.text,
-        choices: q.choices,
-        correctAnswer: q.answer,
-        type,
-        note,
-        status: 'pending'
-      };
-
-      const reports = JSON.parse(localStorage.getItem('plc_reports') || '[]');
+      const qIndex = parseInt(document.getElementById('reportQIndex').value);
+      const type = document.getElementById('reportType').value;
+      const note = document.getElementById('reportNote').value.trim().replace(/[<>"']/g, '');
+      const q = questions[qIndex];
+      const btn = document.getElementById('reportSubmitBtn');
+      btn.disabled = true; btn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> กำลังส่ง...';
+      const report = { id: 'r_'+Date.now(), date: new Date().toISOString(), reporterId: user.id, reporterName: user.name, reporterStudentId: user.studentId, setId: examSet.id, setTitle: examSet.title||`ชุดที่ ${examSet.id}`, questionIndex: qIndex, questionText: q.text, choices: q.choices, correctAnswer: q.answer, type, note, status: 'pending' };
+      const reports = JSON.parse(localStorage.getItem('plc_reports')||'[]');
       reports.unshift(report);
       localStorage.setItem('plc_reports', JSON.stringify(reports));
       fbWrite('plc_reports/' + report.id, report);
-
+      const statusEl = document.getElementById('reportStatus');
       statusEl.classList.remove('hidden');
       statusEl.className = 'text-sm font-bold text-center mb-4 text-green-600';
-      statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> ส่งรายงานเรียบร้อย ขอบคุณที่แจ้งปัญหา!';
-      
+      statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> ส่งรายงานเรียบร้อย ขอบคุณ!';
       setTimeout(() => closeReportModal(), 1800);
     }
   </script>
-  <!-- Footer -->
-  <footer class="w-full text-center py-6 px-4 pb-32 text-slate-500 text-sm font-medium z-20 bg-white/80 backdrop-blur-md border-t border-slate-200 mt-12 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
-    <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+
+  <footer class="w-full text-center py-5 px-4 pb-32 text-slate-500 text-sm font-medium z-20 bg-white/80 backdrop-blur-md border-t border-slate-200 mt-12">
+    <div class="flex flex-col md:flex-row items-center justify-center gap-3">
       <span>&copy; 2026 Mentra Solution Co., Ltd</span>
       <span class="hidden md:inline-block text-slate-300">|</span>
       <div class="flex items-center gap-2">
         <span class="text-slate-400">พัฒนาโดย</span>
-        <a href="https://keexlab-th.github.io/" target="_blank" class="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 text-primary rounded-full hover:shadow-md hover:-translate-y-0.5 hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 hover:border-blue-200 transition-all duration-300 font-bold">
+        <a href="https://keexlab-th.github.io/" target="_blank" class="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 text-primary rounded-full hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 font-bold text-sm">
           <i class="fa-solid fa-code text-secondary"></i> ธนภูมิ แดงประดับ
         </a>
       </div>

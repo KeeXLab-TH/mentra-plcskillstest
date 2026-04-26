@@ -7,28 +7,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com/">
   <link href="./assets/fonts.css" rel="stylesheet">
   <link rel="stylesheet" href="./assets/style.css">
-  
-  <!-- CDNs -->
   <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
   <script>
     tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Sarabun', 'sans-serif'] },
-          colors: { primary: '#1a5276', secondary: '#fb923c' }
-        }
-      }
+      theme: { extend: { fontFamily: { sans: ['Sarabun', 'sans-serif'] }, colors: { primary: '#1a5276', secondary: '#fb923c' } } }
     }
   </script>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-800 pb-20 relative">
-  <!-- Background Shapes -->
+  <!-- Page Loader -->
+  <div class="page-loader" id="pageLoader"><div class="spinner"></div><div class="text-primary font-bold text-lg">กำลังโหลด...</div></div>
+
   <div class="shape-1 floating-shape"></div>
   <div class="shape-2 floating-shape"></div>
 
@@ -40,10 +34,10 @@
         <span class="font-bold text-primary hidden sm:inline-block">ศูนย์ทดสอบมาตรฐานฝีมือแรงงาน <span class="text-secondary">PLC</span></span>
       </div>
     </div>
-    <div class="flex-none gap-4 px-2 lg:px-4">
+    <div class="flex-none gap-3 px-2 lg:px-4">
       <div class="flex items-center gap-2">
         <div class="avatar placeholder">
-          <div class="bg-primary text-neutral-content rounded-full w-10">
+          <div class="bg-gradient-to-br from-primary to-blue-800 text-neutral-content rounded-full w-10 shadow-md">
             <span class="text-xs"><i class="fa-solid fa-user"></i></span>
           </div>
         </div>
@@ -55,12 +49,10 @@
     </div>
   </div>
 
-  <div class="container mx-auto px-4 mt-8" data-aos="fade-down">
+  <div class="container mx-auto px-4 mt-8">
     <!-- Hero Section -->
-    <div class="glass-card rounded-3xl p-8 mb-8 bg-gradient-to-br from-primary to-blue-800 text-white shadow-xl relative overflow-hidden">
-      <div class="absolute right-0 top-0 opacity-10 text-[10rem] -mt-10 -mr-10">
-        <i class="fa-solid fa-microchip"></i>
-      </div>
+    <div class="glass-card rounded-3xl p-8 mb-8 bg-gradient-to-br from-primary to-blue-800 text-white shadow-xl relative overflow-hidden" data-aos="fade-down" data-aos-duration="600">
+      <div class="absolute right-0 top-0 opacity-10 text-[10rem] -mt-10 -mr-10"><i class="fa-solid fa-microchip"></i></div>
       <div class="relative z-10">
         <h2 class="text-3xl font-bold mb-2 drop-shadow-md" id="heroGreeting">สวัสดี!</h2>
         <p class="text-blue-100 text-lg opacity-90">มาตรฐานฝีมือแรงงานแห่งชาติ สาขาช่างโปรแกรมเมเบิ้ลลอจิกคอนโทรลเลอร์ ระดับ ๑</p>
@@ -68,18 +60,19 @@
     </div>
 
     <!-- Stats -->
-    <div class="w-full mb-10 overflow-x-auto pb-4" data-aos="fade-up">
+    <div class="w-full mb-10 overflow-x-auto pb-2" data-aos="fade-up" data-aos-delay="100">
       <div class="stats shadow w-full glass-card bg-white/80" id="statsRow">
-        <!-- Rendered by JS -->
+        <div class="stat place-items-center"><div class="skeleton-pulse h-8 w-16"></div><div class="skeleton-pulse h-4 w-24 mt-2"></div></div>
+        <div class="stat place-items-center"><div class="skeleton-pulse h-8 w-16"></div><div class="skeleton-pulse h-4 w-24 mt-2"></div></div>
+        <div class="stat place-items-center"><div class="skeleton-pulse h-8 w-16"></div><div class="skeleton-pulse h-4 w-24 mt-2"></div></div>
+        <div class="stat place-items-center"><div class="skeleton-pulse h-8 w-16"></div><div class="skeleton-pulse h-4 w-24 mt-2"></div></div>
       </div>
     </div>
 
     <!-- Branch Tabs -->
-    <div id="branchTabs" class="flex flex-col md:flex-row gap-4 mb-8" data-aos="fade-up" data-aos-delay="100">
-      <!-- Rendered by JS -->
-    </div>
+    <div id="branchTabs" class="flex flex-col md:flex-row gap-4 mb-8" data-aos="fade-up" data-aos-delay="150"></div>
 
-    <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4" data-aos="fade-right">
+    <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4" data-aos="fade-right" data-aos-delay="200">
       <div>
         <h3 class="text-2xl font-bold text-primary flex items-center gap-2" id="setsHeading"><i class="fa-solid fa-layer-group"></i> สาขา</h3>
         <p class="text-slate-500 font-medium mt-1" id="setsSubheading">ระดับ</p>
@@ -87,9 +80,7 @@
     </div>
 
     <!-- Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="examSetsGrid">
-      <!-- Rendered by JS -->
-    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="examSetsGrid"></div>
 
     <!-- Empty State -->
     <div id="emptyBranch" class="hidden glass-card rounded-3xl p-16 text-center shadow-sm" data-aos="zoom-in">
@@ -112,26 +103,14 @@
   <script src="./assets/app.js"></script>
   
   <script>
+    window.addEventListener('load', () => { const l=document.getElementById('pageLoader'); if(l){l.style.opacity='0';setTimeout(()=>l.remove(),300);} });
     AOS.init({ once: true });
 
     const user = requireAuth();
-    let currentBranch = BRANCHES[0].id; // default: plc
+    let currentBranch = BRANCHES[0].id;
     
     function confirmLogout() {
-      Swal.fire({
-        title: 'ออกจากระบบ?',
-        text: "คุณต้องการออกจากระบบใช่หรือไม่?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#e74c3c',
-        cancelButtonColor: '#95a5a6',
-        confirmButtonText: 'ออกจากระบบ',
-        cancelButtonText: 'ยกเลิก'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          logout();
-        }
-      });
+      Swal.fire({ title:'ออกจากระบบ?', text:"คุณต้องการออกจากระบบใช่หรือไม่?", icon:'warning', showCancelButton:true, confirmButtonColor:'#e74c3c', cancelButtonColor:'#95a5a6', confirmButtonText:'ออกจากระบบ', cancelButtonText:'ยกเลิก' }).then(r => { if(r.isConfirmed) logout(); });
     }
 
     if (user) {
@@ -140,12 +119,9 @@
 
       const history = getHistory(user.id);
       const attemptedSets = new Set(history.map(h => String(h.setId)));
-      const passedSets    = new Set(history.filter(h => h.passed).map(h => String(h.setId)));
+      const passedSets = new Set(history.filter(h => h.passed).map(h => String(h.setId)));
       const bestScores = {};
-      history.forEach(h => {
-        const k = String(h.setId);
-        if (!bestScores[k] || h.score > bestScores[k]) bestScores[k] = h.score;
-      });
+      history.forEach(h => { const k = String(h.setId); if (!bestScores[k] || h.score > bestScores[k]) bestScores[k] = h.score; });
 
       function renderStats(allSetsLen, attemptedLen, passedLen, histLen) {
         document.getElementById('statsRow').innerHTML = `
@@ -168,14 +144,13 @@
             <div class="stat-figure text-orange-500 opacity-50 text-3xl"><i class="fa-solid fa-clock-rotate-left"></i></div>
             <div class="stat-title text-slate-500 font-medium">ทำข้อสอบทั้งหมด (ครั้ง)</div>
             <div class="stat-value text-orange-500">${histLen}</div>
-          </div>
-        `;
+          </div>`;
       }
 
       const allSets = getAllExamSets();
       renderStats(allSets.length, attemptedSets.size, passedSets.size, history.length);
 
-      // Render Branch Tabs
+      // Branch Tabs
       const tabsEl = document.getElementById('branchTabs');
       BRANCHES.forEach(b => {
         const count = getExamSetsByBranch(b.id).length;
@@ -183,11 +158,7 @@
         btn.id = 'branchBtn_' + b.id;
         btn.onclick = () => { currentBranch = b.id; renderBranchTabs(); renderGrid(); };
         btn.className = 'flex-1 text-left p-4 rounded-2xl border-2 transition-all duration-200 hover-lift bg-white shadow-sm';
-        btn.innerHTML = `
-          <div class="text-2xl mb-2">${b.icon}</div>
-          <div class="font-bold text-primary">${b.title}</div>
-          <div class="text-xs text-slate-500 mt-1">${b.level} &nbsp;·&nbsp; ${count} ชุดข้อสอบ</div>
-        `;
+        btn.innerHTML = `<div class="text-2xl mb-2">${b.icon}</div><div class="font-bold text-primary">${b.title}</div><div class="text-xs text-slate-500 mt-1">${b.level} &nbsp;·&nbsp; ${count} ชุดข้อสอบ</div>`;
         tabsEl.appendChild(btn);
       });
 
@@ -195,13 +166,8 @@
         BRANCHES.forEach(b => {
           const btn = document.getElementById('branchBtn_' + b.id);
           if (!btn) return;
-          if (b.id === currentBranch) {
-            btn.classList.add('border-primary', 'bg-blue-50/50', 'shadow-md');
-            btn.classList.remove('border-slate-200', 'bg-white', 'shadow-sm');
-          } else {
-            btn.classList.remove('border-primary', 'bg-blue-50/50', 'shadow-md');
-            btn.classList.add('border-slate-200', 'bg-white', 'shadow-sm');
-          }
+          if (b.id === currentBranch) { btn.classList.add('border-primary','bg-blue-50/50','shadow-md'); btn.classList.remove('border-slate-200','bg-white','shadow-sm'); }
+          else { btn.classList.remove('border-primary','bg-blue-50/50','shadow-md'); btn.classList.add('border-slate-200','bg-white','shadow-sm'); }
         });
       }
 
@@ -210,11 +176,9 @@
         const sets = getExamSetsByBranch(currentBranch);
         document.getElementById('setsHeading').innerHTML = `<span class="text-3xl mr-2">${branch.icon}</span> ${branch.title}`;
         document.getElementById('setsSubheading').innerHTML = `${branch.level} &bull; ${sets.length} ชุดข้อสอบ`;
-
         const grid = document.getElementById('examSetsGrid');
         const emptyEl = document.getElementById('emptyBranch');
         grid.innerHTML = '';
-
         if (!sets.length) { emptyEl.classList.remove('hidden'); return; }
         emptyEl.classList.add('hidden');
 
@@ -226,73 +190,49 @@
           const isCustom = !isBuiltin;
           const key = String(set.id);
           const best = bestScores[key];
-          const passed  = passedSets.has(key);
+          const passed = passedSets.has(key);
           const attempted = attemptedSets.has(key);
           
           let statusBadge = '<div class="badge badge-ghost font-medium">ยังไม่ได้ทำ</div>';
           let borderClass = 'border-slate-200';
-          
-          if (attempted && passed) {
-            statusBadge = '<div class="badge badge-success text-white font-medium"><i class="fa-solid fa-check mr-1"></i> ผ่านแล้ว</div>';
-            borderClass = 'border-green-300 bg-green-50/30';
-          } else if (attempted) {
-            statusBadge = '<div class="badge badge-error text-white font-medium"><i class="fa-solid fa-xmark mr-1"></i> ยังไม่ผ่าน</div>';
-            borderClass = 'border-red-200 bg-red-50/30';
-          }
+          if (attempted && passed) { statusBadge = '<div class="badge badge-success text-white font-medium"><i class="fa-solid fa-check mr-1"></i> ผ่านแล้ว</div>'; borderClass = 'border-green-300 bg-green-50/30'; }
+          else if (attempted) { statusBadge = '<div class="badge badge-error text-white font-medium"><i class="fa-solid fa-xmark mr-1"></i> ยังไม่ผ่าน</div>'; borderClass = 'border-red-200 bg-red-50/30'; }
 
           const ss = getSetSettings(set.id);
-          const timeLabel = ss ? ss.timeMinutes : (set.timeMinutes || (isPlcBuiltin ? EXAM_TIME_MINUTES : 60));
-          const passLabel = ss ? ss.passScore   : (set.passScore   || (isPlcBuiltin ? PASS_SCORE       : 42));
-          const qCount    = (set.questions || []).length || TOTAL_QUESTIONS;
-          const displayTitle = isCustom
-            ? set.title
-            : ((ss && ss.title) ? ss.title : (isPlcBuiltin ? `ชุดที่ ${set.id}` : (set.title || `ชุดที่ ${set.id}`)));
-          const builtInDesc  = (ss && ss.description != null && ss.description !== '') ? ss.description : (set.description || 'ครอบคลุมทุกหัวข้อตามสัดส่วน');
+          const timeLabel = ss ? ss.timeMinutes : (set.timeMinutes || EXAM_TIME_MINUTES);
+          const passLabel = ss ? ss.passScore : (set.passScore || PASS_SCORE);
+          const qCount = (set.questions || []).length || TOTAL_QUESTIONS;
+          const displayTitle = isCustom ? set.title : ((ss && ss.title) ? ss.title : (isPlcBuiltin ? `ชุดที่ ${set.id}` : (set.title || `ชุดที่ ${set.id}`)));
+          const builtInDesc = (ss && ss.description != null && ss.description !== '') ? ss.description : (set.description || 'ครอบคลุมทุกหัวข้อตามสัดส่วน');
           const setNumDisplay = isCustom ? '<i class="fa-solid fa-pen-nib text-xl"></i>' : (isPlcBuiltin ? '0' + set.id : String(set.id).replace('e',''));
           
           let metaHtml = '';
           if (isCustom) {
-            metaHtml = `<p class="text-sm text-slate-600 mb-2 line-clamp-2 min-h-[2.5rem]">${set.description || 'ข้อสอบกำหนดเอง'}</p>
-                        <div class="text-xs text-slate-500"><i class="fa-solid fa-list-ol mr-1"></i> ${qCount} ข้อ</div>`;
+            metaHtml = `<p class="text-sm text-slate-600 mb-2 line-clamp-2 min-h-[2.5rem]">${set.description || 'ข้อสอบกำหนดเอง'}</p><div class="text-xs text-slate-500"><i class="fa-solid fa-list-ol mr-1"></i> ${qCount} ข้อ</div>`;
           } else if (isPlcBuiltin) {
-            metaHtml = `<p class="text-sm text-slate-600 mb-2 font-semibold line-clamp-1">${builtInDesc}</p>
-                        <ul class="text-xs text-slate-500 space-y-1 mb-2">
-                          ${TOPIC_DISTRIBUTION.slice(0,3).map(t => `<li><i class="fa-solid fa-circle text-[0.4rem] text-primary mr-1"></i> ${t.label}</li>`).join('')}
-                          <li><i class="fa-solid fa-circle text-[0.4rem] text-primary mr-1"></i> ฯลฯ</li>
-                        </ul>`;
+            metaHtml = `<p class="text-sm text-slate-600 mb-2 font-semibold line-clamp-1">${builtInDesc}</p><ul class="text-xs text-slate-500 space-y-1 mb-2">${TOPIC_DISTRIBUTION.slice(0,3).map(t => `<li><i class="fa-solid fa-circle text-[0.4rem] text-primary mr-1"></i> ${t.label}</li>`).join('')}<li><i class="fa-solid fa-circle text-[0.4rem] text-primary mr-1"></i> ฯลฯ</li></ul>`;
           } else {
-            metaHtml = `<p class="text-sm text-slate-600 mb-2 font-semibold line-clamp-1">${builtInDesc}</p>
-                        <div class="text-xs text-slate-500"><i class="fa-solid fa-list-ol mr-1"></i> ${qCount} ข้อ</div>`;
+            metaHtml = `<p class="text-sm text-slate-600 mb-2 font-semibold line-clamp-1">${builtInDesc}</p><div class="text-xs text-slate-500"><i class="fa-solid fa-list-ol mr-1"></i> ${qCount} ข้อ</div>`;
           }
 
           grid.innerHTML += `
             <div class="glass-card rounded-3xl p-6 border-2 hover-lift flex flex-col h-full ${borderClass}" data-aos="fade-up" data-aos-delay="${delay}">
               <div class="flex justify-between items-start mb-4">
-                <div class="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-xl shadow-md">
-                  ${setNumDisplay}
-                </div>
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-blue-800 text-white flex items-center justify-center font-bold text-xl shadow-md">${setNumDisplay}</div>
                 ${statusBadge}
               </div>
-              
               <h4 class="text-xl font-bold text-slate-800 mb-2 line-clamp-1">${displayTitle}</h4>
-              <div class="flex-grow mb-4">
-                ${metaHtml}
-              </div>
-              
+              <div class="flex-grow mb-4">${metaHtml}</div>
               <div class="divider my-2"></div>
-              
               <div class="flex justify-between items-center text-xs font-medium text-slate-500 mb-4">
                 <span><i class="fa-regular fa-clock text-secondary mr-1"></i> ${timeLabel} นาที</span>
                 <span><i class="fa-solid fa-bullseye text-green-500 mr-1"></i> ผ่าน ${passLabel} ข้อ</span>
               </div>
-              
               ${best !== undefined ? `<div class="bg-blue-50 text-blue-800 text-xs py-2 px-3 rounded-lg mb-4 text-center font-bold border border-blue-100"><i class="fa-solid fa-trophy text-orange-400 mr-1"></i> คะแนนสูงสุด: ${best} / ${qCount}</div>` : '<div class="h-[34px] mb-4"></div>'}
-              
-              <button class="btn btn-primary w-full rounded-xl" onclick="startExam('${set.id}')">
+              <button class="btn btn-primary w-full rounded-xl bg-gradient-to-r from-primary to-blue-800 border-none shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all" onclick="startExam('${set.id}')">
                 เริ่มทำข้อสอบ <i class="fa-solid fa-arrow-right ml-1"></i>
               </button>
-            </div>
-          `;
+            </div>`;
           delay += 50;
         });
       }
@@ -300,15 +240,13 @@
       renderBranchTabs();
       renderGrid();
 
-      // sync Firebase ใน background แล้ว re-render ถ้ามี custom sets ใหม่
+      // Background sync
       syncAllFromFirebase().then(() => {
-        renderBranchTabs();
-        renderGrid();
-        // อัปเดต stats ด้วย
+        renderBranchTabs(); renderGrid();
         const allSets2 = getAllExamSets();
         const history2 = getHistory(user.id);
         const attempted2 = new Set(history2.map(h => String(h.setId)));
-        const passed2    = new Set(history2.filter(h => h.passed).map(h => String(h.setId)));
+        const passed2 = new Set(history2.filter(h => h.passed).map(h => String(h.setId)));
         renderStats(allSets2.length, attempted2.size, passed2.size, history2.length);
       }).catch(() => {});
     }
@@ -318,14 +256,15 @@
       window.location.href = 'exam.html';
     }
   </script>
+
   <!-- Footer -->
-  <footer class="w-full text-center py-6 px-4 text-slate-500 text-sm font-medium z-20 bg-white/80 backdrop-blur-md border-t border-slate-200 mt-12 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
-    <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+  <footer class="w-full text-center py-5 px-4 text-slate-500 text-sm font-medium z-20 bg-white/80 backdrop-blur-md border-t border-slate-200 mt-12">
+    <div class="flex flex-col md:flex-row items-center justify-center gap-3">
       <span>&copy; 2026 Mentra Solution Co., Ltd</span>
       <span class="hidden md:inline-block text-slate-300">|</span>
       <div class="flex items-center gap-2">
         <span class="text-slate-400">พัฒนาโดย</span>
-        <a href="https://keexlab-th.github.io/" target="_blank" class="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 text-primary rounded-full hover:shadow-md hover:-translate-y-0.5 hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 hover:border-blue-200 transition-all duration-300 font-bold">
+        <a href="https://keexlab-th.github.io/" target="_blank" class="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 text-primary rounded-full hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 font-bold text-sm">
           <i class="fa-solid fa-code text-secondary"></i> ธนภูมิ แดงประดับ
         </a>
       </div>

@@ -687,11 +687,18 @@
       list.innerHTML = '';
       
       if (isEditingBuiltin) {
-        list.innerHTML = '<div class="alert alert-info">ข้อสอบระบบพื้นฐานไม่สามารถแก้ไขรายข้อได้ สามารถตั้งค่าได้เฉพาะ เวลาสอบ, เกณฑ์ผ่าน, การแสดงผล เท่านั้น</div>';
+        list.innerHTML = '<div class="alert alert-info"><i class="fa-solid fa-circle-info mr-2"></i>ข้อสอบระบบพื้นฐานไม่สามารถแก้ไขรายข้อได้ สามารถตั้งค่าได้เฉพาะ เวลาสอบ, เกณฑ์ผ่าน, การแสดงผล เท่านั้น</div>';
         return;
       }
 
       editQuestions.forEach((q, i) => {
+        const qImg = q.image ? `<div class="mt-2 mb-2"><img src="${q.image}" class="max-h-32 rounded-lg border border-slate-200"><button class="btn btn-xs btn-error btn-ghost ml-2" onclick="updateQImage(${i}, '')"><i class="fa-solid fa-trash"></i></button></div>` : '';
+        const choiceImgs = (ci) => {
+          const img = q.choiceImages && q.choiceImages[ci] ? q.choiceImages[ci] : '';
+          if (img) return `<div class="mt-1"><img src="${img}" class="max-h-20 rounded border border-slate-200"><button class="btn btn-xs btn-error btn-ghost ml-1" onclick="updateQChoiceImage(${i}, ${ci}, '')"><i class="fa-solid fa-trash"></i></button></div>`;
+          return `<input type="file" accept="image/*" class="file-input file-input-xs file-input-ghost w-full mt-1 opacity-60" onchange="handleImageUpload(this, d => updateQChoiceImage(${i}, ${ci}, d))">`;
+        };
+
         list.innerHTML += `
           <div class="glass-card bg-white p-4 rounded-xl border border-slate-200">
             <div class="flex justify-between mb-2">
@@ -699,11 +706,16 @@
               <button class="btn btn-xs btn-error btn-ghost" onclick="removeQuestion(${i})"><i class="fa-solid fa-xmark"></i> ลบ</button>
             </div>
             <textarea class="textarea textarea-bordered textarea-sm w-full mb-2" onchange="updateQText(${i}, this.value)" placeholder="โจทย์ข้อสอบ">${q.text}</textarea>
+            ${qImg}
+            ${!q.image ? `<input type="file" accept="image/*" class="file-input file-input-xs file-input-bordered w-full mb-2" onchange="handleImageUpload(this, d => updateQImage(${i}, d))">` : ''}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
               ${q.choices.map((c, ci) => `
-                <div class="flex items-center gap-2">
-                  <input type="radio" name="correctAns_${i}" class="radio radio-sm radio-success" ${q.answer === ci ? 'checked' : ''} onchange="updateQAnswer(${i}, ${ci})">
-                  <input type="text" class="input input-sm input-bordered w-full ${q.answer === ci ? 'border-success bg-green-50 text-green-800' : ''}" value="${c}" onchange="updateQChoice(${i}, ${ci}, this.value)" placeholder="ตัวเลือก">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2">
+                    <input type="radio" name="correctAns_${i}" class="radio radio-sm radio-success" ${q.answer === ci ? 'checked' : ''} onchange="updateQAnswer(${i}, ${ci})">
+                    <input type="text" class="input input-sm input-bordered w-full ${q.answer === ci ? 'border-success bg-green-50 text-green-800' : ''}" value="${c}" onchange="updateQChoice(${i}, ${ci}, this.value)" placeholder="ตัวเลือก">
+                  </div>
+                  ${choiceImgs(ci)}
                 </div>
               `).join('')}
             </div>
@@ -713,13 +725,28 @@
     }
 
     function addBlankQuestion() {
-      editQuestions.push({ text: 'คำถามใหม่', choices: ['ก.', 'ข.', 'ค.', 'ง.'], answer: 0 });
+      editQuestions.push({ text: 'คำถามใหม่', choices: ['ก.', 'ข.', 'ค.', 'ง.'], answer: 0, image: '', choiceImages: ['','','',''] });
       renderEditorQuestions();
     }
     function removeQuestion(i) { editQuestions.splice(i, 1); renderEditorQuestions(); }
     function updateQText(i, val) { editQuestions[i].text = val; }
-    function updateQChoice(qI, cI, val) { editQuestions[i].choices[cI] = val; renderEditorQuestions(); }
+    function updateQChoice(qI, cI, val) { editQuestions[qI].choices[cI] = val; renderEditorQuestions(); }
     function updateQAnswer(qI, cI) { editQuestions[qI].answer = cI; renderEditorQuestions(); }
+    function updateQImage(qI, dataUrl) { editQuestions[qI].image = dataUrl; renderEditorQuestions(); }
+    function updateQChoiceImage(qI, cI, dataUrl) {
+      if (!editQuestions[qI].choiceImages) editQuestions[qI].choiceImages = ['','','',''];
+      editQuestions[qI].choiceImages[cI] = dataUrl;
+      renderEditorQuestions();
+    }
+    function handleImageUpload(inputEl, callback) {
+      const file = inputEl.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        compressImage(e.target.result, compressed => callback(compressed));
+      };
+      reader.readAsDataURL(file);
+    }
 
     function saveSetEditor() {
       const id = document.getElementById('editSetId').value || ('c' + Date.now());
@@ -895,7 +922,163 @@
       localStorage.removeItem('plc_site_logo');
       document.getElementById('siteLogoInput').value = '';
     }
-    
+
+    // ==== MISSING FUNCTIONS ====
+    function adminRefreshData() {
+      showLoading('กำลังดึงข้อมูลล่าสุด...', 'เชื่อมต่อ Firebase');
+      syncAllFromFirebase().then(() => {
+        hideLoading();
+        renderOverview();
+        Swal.fire({icon:'success', title:'อัปเดตข้อมูลแล้ว', timer:1200, showConfirmButton:false});
+      }).catch(() => { hideLoading(); });
+    }
+
+    function saveFBConfig() {
+      const url = document.getElementById('fbUrlInput').value.trim();
+      localStorage.setItem('plc_firebase_url', url);
+      const st = document.getElementById('fbConfigStatus');
+      st.className = 'mt-3 text-sm font-bold text-success'; st.innerHTML = '<i class="fa-solid fa-check"></i> บันทึก URL แล้ว'; st.classList.remove('hidden');
+      setTimeout(() => st.classList.add('hidden'), 3000);
+    }
+
+    function testFBConnection() {
+      const url = document.getElementById('fbUrlInput').value.trim() || fbGetUrl();
+      const st = document.getElementById('fbConfigStatus');
+      st.className = 'mt-3 text-sm font-bold text-blue-600'; st.innerHTML = '<span class="loading loading-spinner loading-xs"></span> กำลังทดสอบ...'; st.classList.remove('hidden');
+      fetch(url + '/.json?shallow=true', {signal: AbortSignal.timeout(5000)})
+        .then(r => { if(r.ok) { st.className='mt-3 text-sm font-bold text-success'; st.innerHTML='<i class="fa-solid fa-circle-check"></i> เชื่อมต่อสำเร็จ!'; } else throw 0; })
+        .catch(() => { st.className='mt-3 text-sm font-bold text-error'; st.innerHTML='<i class="fa-solid fa-circle-xmark"></i> เชื่อมต่อไม่ได้'; });
+    }
+
+    function csvEscape(v) { const s = String(v??'').replace(/"/g, '""'); return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s}"` : s; }
+    function downloadCSV(filename, rows) {
+      const BOM = '\uFEFF';
+      const csv = BOM + rows.map(r => r.map(csvEscape).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+    }
+
+    function exportOverviewCSV() {
+      const hist = getAllHistoryArray();
+      const rows = [['ชื่อ','รหัส','ชุดข้อสอบ','คะแนน','จากทั้งหมด','ผลลัพธ์','วันที่']];
+      hist.forEach(h => rows.push([h.userName, h.userStudentId, h.setTitle, h.score, h.total, h.passed?'ผ่าน':'ไม่ผ่าน', h.date]));
+      downloadCSV('overview_'+new Date().toISOString().slice(0,10)+'.csv', rows);
+    }
+    function exportResultsCSV() { exportOverviewCSV(); }
+    function exportReportsCSV() {
+      const reps = getLocalReports();
+      const rows = [['วันที่','ผู้แจ้ง','รหัส','ชุดข้อสอบ','ข้อที่','ประเภท','หมายเหตุ','สถานะ']];
+      reps.forEach(r => rows.push([r.date, r.reporterName, r.reporterStudentId, r.setTitle, r.questionIndex+1, r.type, r.note, r.status]));
+      downloadCSV('reports_'+new Date().toISOString().slice(0,10)+'.csv', rows);
+    }
+    function printOverview() { window.print(); }
+
+    function resetAllUsers() {
+      Swal.fire({title:'ล้างผู้ใช้ทั้งหมด?',text:'ข้อมูลจะหายถาวร',icon:'warning',showCancelButton:true,confirmButtonColor:'#e74c3c',confirmButtonText:'ลบทั้งหมด',cancelButtonText:'ยกเลิก'}).then(r=>{
+        if(r.isConfirmed){localStorage.removeItem('plc_users');fbWrite('plc_users',{});renderUsers();renderOverview();Swal.fire({icon:'success',title:'ล้างข้อมูลแล้ว',timer:1200,showConfirmButton:false});}
+      });
+    }
+    function resetAllHistory() {
+      Swal.fire({title:'ล้างผลสอบทั้งหมด?',text:'ข้อมูลจะหายถาวร',icon:'warning',showCancelButton:true,confirmButtonColor:'#e74c3c',confirmButtonText:'ลบทั้งหมด',cancelButtonText:'ยกเลิก'}).then(r=>{
+        if(r.isConfirmed){localStorage.setItem('plc_history','{}');fbWrite('plc_history',{});renderResults();renderOverview();Swal.fire({icon:'success',title:'ล้างผลสอบแล้ว',timer:1200,showConfirmButton:false});}
+      });
+    }
+    function resetAllReports() {
+      Swal.fire({title:'ล้างรายงานทั้งหมด?',icon:'warning',showCancelButton:true,confirmButtonColor:'#e74c3c',confirmButtonText:'ลบทั้งหมด',cancelButtonText:'ยกเลิก'}).then(r=>{
+        if(r.isConfirmed){localStorage.setItem('plc_reports','[]');fbWrite('plc_reports',[]);renderReports();Swal.fire({icon:'success',title:'ล้างรายงานแล้ว',timer:1200,showConfirmButton:false});}
+      });
+    }
+
+    function downloadBackup(source) {
+      const st = document.getElementById('backupStatus');
+      st.className='mt-2 text-xs font-bold text-blue-600'; st.innerHTML='<span class="loading loading-spinner loading-xs"></span> กำลังสร้าง Backup...'; st.classList.remove('hidden');
+      const doBackup = (data) => {
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'plc_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+        st.className='mt-2 text-xs font-bold text-success'; st.innerHTML='<i class="fa-solid fa-check"></i> ดาวน์โหลด Backup สำเร็จ';
+      };
+      if (source === 'firebase') {
+        fbRead('').then(data => doBackup(data || {})).catch(() => { st.className='mt-2 text-xs font-bold text-error'; st.innerHTML='ไม่สามารถดึงจาก Firebase'; });
+      } else {
+        const keys = ['plc_users','plc_history','plc_custom_sets','plc_set_settings','plc_reports'];
+        const data = {}; keys.forEach(k => { try { data[k] = JSON.parse(localStorage.getItem(k)||'null'); } catch(e){} });
+        doBackup(data);
+      }
+    }
+
+    let _restoreData = null;
+    function handleRestoreFile(input) {
+      const file = input.files[0]; if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          _restoreData = JSON.parse(e.target.result);
+          const keys = Object.keys(_restoreData).filter(k=>k.startsWith('plc_'));
+          document.getElementById('restorePreview').classList.remove('hidden');
+          document.getElementById('restorePreview').innerHTML = `พบข้อมูล: ${keys.join(', ')} (${keys.length} รายการ)`;
+          document.getElementById('restoreConfirmBtn').classList.remove('hidden');
+        } catch(err) { Swal.fire('ไฟล์ผิดรูปแบบ','ไม่สามารถอ่านไฟล์ JSON ได้','error'); }
+      };
+      reader.readAsText(file);
+    }
+    function confirmRestore() {
+      if(!_restoreData) return;
+      Swal.fire({title:'ยืนยันกู้คืน?',text:'ข้อมูลปัจจุบันจะถูกทับ',icon:'warning',showCancelButton:true,confirmButtonColor:'#e74c3c',confirmButtonText:'ยืนยัน',cancelButtonText:'ยกเลิก'}).then(r=>{
+        if(r.isConfirmed){
+          Object.keys(_restoreData).forEach(k=>{ if(k.startsWith('plc_')) localStorage.setItem(k, JSON.stringify(_restoreData[k])); });
+          const st=document.getElementById('restoreStatus'); st.className='mt-2 text-xs font-bold text-success'; st.innerHTML='<i class="fa-solid fa-check"></i> กู้คืนข้อมูลสำเร็จ!'; st.classList.remove('hidden');
+          renderOverview();
+          Swal.fire({icon:'success',title:'กู้คืนข้อมูลสำเร็จ',timer:1500,showConfirmButton:false});
+        }
+      });
+    }
+
+    let _importedQuestions = [];
+    function parseImportText() {
+      const raw = document.getElementById('importText').value.trim();
+      if(!raw) return Swal.fire('ว่างเปล่า','กรุณาวางข้อความข้อสอบก่อน','warning');
+      const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+      _importedQuestions = [];
+      let current = null;
+      lines.forEach(line => {
+        const qMatch = line.match(/^(?:ข้อ\s*)?(\d+)[.)]\s*(.*)/);
+        const cMatch = line.match(/^([กขคง])[.)]\s*(.*)/);
+        const ansMatch = line.match(/^เฉลย\s*[:：]\s*([กขคง])/);
+        if(qMatch && !cMatch) {
+          if(current && current.choices.length>=4) _importedQuestions.push(current);
+          current = {text: qMatch[2] || line, choices: [], answer: 0, image: '', choiceImages: ['','','','']};
+        } else if(cMatch && current) {
+          current.choices.push(cMatch[2]);
+        } else if(ansMatch && current) {
+          const idx = 'กขคง'.indexOf(ansMatch[1]);
+          if(idx >= 0) current.answer = idx;
+        } else if(current && current.choices.length < 4 && !qMatch) {
+          // might be continuation of question text
+          if(current.choices.length === 0) current.text += ' ' + line;
+        }
+      });
+      if(current && current.choices.length >= 2) _importedQuestions.push(current);
+      
+      if(!_importedQuestions.length) return Swal.fire('ไม่พบข้อสอบ','ไม่สามารถแยกข้อสอบจากข้อความที่วางได้ ลองตรวจสอบรูปแบบ','warning');
+      
+      document.getElementById('importPreviewArea').classList.remove('hidden');
+      document.getElementById('importCountLabel').textContent = `พบ ${_importedQuestions.length} ข้อ`;
+      document.getElementById('importPreviewList').innerHTML = _importedQuestions.map((q,i) => `<div class="mb-1"><strong>ข้อ ${i+1}:</strong> ${q.text.slice(0,50)}... (${q.choices.length} ตัวเลือก)</div>`).join('');
+    }
+    function cancelImport() {
+      _importedQuestions = [];
+      document.getElementById('importPreviewArea').classList.add('hidden');
+      document.getElementById('importText').value = '';
+    }
+    function confirmImport() {
+      editQuestions.push(..._importedQuestions);
+      _importedQuestions = [];
+      document.getElementById('importPreviewArea').classList.add('hidden');
+      document.getElementById('importText').value = '';
+      renderEditorQuestions();
+      Swal.fire({icon:'success', title:`เพิ่ม ${editQuestions.length} ข้อแล้ว`, timer:1200, showConfirmButton:false});
+    }
+
     // Init
     showTab('overview');
     

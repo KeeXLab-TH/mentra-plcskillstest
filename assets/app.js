@@ -273,9 +273,33 @@ function fbSyncKey(key) {
 function getReports() {
   return JSON.parse(localStorage.getItem('plc_reports') || '[]');
 }
+function getLocalReports() {
+  return getReports();
+}
 function saveReports(reports) {
   localStorage.setItem('plc_reports', JSON.stringify(reports));
   fbSyncKey('plc_reports');
+}
+
+// ====== Flatten all history into single array with user info ======
+function getAllHistoryArray() {
+  const allHist = JSON.parse(localStorage.getItem('plc_history') || '{}');
+  const users = getUsers();
+  const flat = [];
+  Object.keys(allHist).forEach(uid => {
+    const arr = Array.isArray(allHist[uid]) ? allHist[uid] : [];
+    const u = users.find(x => x.id === uid);
+    arr.forEach((h, idx) => {
+      flat.push({
+        ...h,
+        userId: uid,
+        userName: u ? u.name : (h.userName || 'ไม่ระบุ'),
+        userStudentId: u ? u.studentId : (h.userStudentId || '-'),
+        id: h.id || `${uid}_${idx}`
+      });
+    });
+  });
+  return flat;
 }
 
 // ===== Global UI Utilities =====
