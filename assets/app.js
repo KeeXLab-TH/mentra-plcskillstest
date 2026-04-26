@@ -334,5 +334,5 @@ function setReviewSetting(val) {
 
 // ====== AI Chat (Gemini API Key) ======
 function getGeminiApiKey() {
-  return 'AIzaSyD2GMAxdH0xzTBxisQTs3S36OH1fV3NmAY';
+  return 'AIzaSyAykNZDJJM4Qpa4xyUSbggcrovYTpUqR4E';
 }
