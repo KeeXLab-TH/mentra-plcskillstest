@@ -115,7 +115,7 @@
 
     if (user) {
       document.getElementById('navUserName').textContent = user.name;
-      document.getElementById('heroGreeting').textContent = `สวัสดี, ${user.name}!`;
+      document.getElementById('heroGreeting').textContent = `ยินดีต้อนรับ คุณ ${user.name}!`;
 
       const history = getHistory(user.id);
       const attemptedSets = new Set(history.map(h => String(h.setId)));
