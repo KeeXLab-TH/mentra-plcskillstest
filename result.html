@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ผลการสอบ - ระบบฝึกทำข้อสอบ PLC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link href="./assets/fonts.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+  
+  <!-- CDNs -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Sarabun', 'sans-serif'] },
+          colors: { primary: '#1a5276', secondary: '#fb923c' }
+        }
+      }
+    }
+  </script>
+  <style>
+    .result-card-correct {
+      border-left: 4px solid #22c55e;
+      background: linear-gradient(135deg, #f0fdf4, #ffffff);
+    }
+    .result-card-wrong {
+      border-left: 4px solid #ef4444;
+      background: linear-gradient(135deg, #fef2f2, #ffffff);
+    }
+    .result-card-skip {
+      border-left: 4px solid #94a3b8;
+      background: linear-gradient(135deg, #f8fafc, #ffffff);
+    }
+    .score-circle {
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      position: relative;
+    }
+    .score-circle::before {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      padding: 6px;
+      background: conic-gradient(var(--score-color) calc(var(--score-pct) * 1%), #e2e8f0 0);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
+    @keyframes countUp {
+      from { opacity: 0; transform: scale(0.5); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-score {
+      animation: countUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+    .confetti-piece {
+      position: fixed;
+      width: 10px; height: 10px;
+      top: -20px;
+      z-index: 100;
+      animation: confetti-fall linear forwards;
+      pointer-events: none;
+    }
+    .filter-btn.active {
+      background-color: #1a5276;
+      color: white;
+      border-color: #1a5276;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen relative">
+  <!-- Background Shapes -->
+  <div class="shape-1 floating-shape"></div>
+  <div class="shape-2 floating-shape"></div>
+
+  <!-- Navbar -->
+  <div class="navbar bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-slate-200">
+    <div class="flex-1 px-2 lg:px-4">
+      <div class="flex items-center gap-3">
+        <img src="logo.png" alt="Logo" class="h-10 object-contain drop-shadow-sm bg-white rounded-lg p-1">
+        <span class="font-bold text-primary hidden sm:inline-block">ผลการสอบ</span>
+      </div>
+    </div>
+    <div class="flex-none gap-2 px-2 lg:px-4">
+      <button class="btn btn-primary btn-sm rounded-xl bg-gradient-to-r from-primary to-blue-800 border-none" onclick="window.location.href='dashboard.html'">
+        <i class="fa-solid fa-house mr-1"></i> <span class="hidden sm:inline">กลับหน้าหลัก</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 pt-8 pb-20 max-w-4xl">
+    <!-- Score Hero Section -->
+    <div id="scoreHero" class="glass-card rounded-3xl p-8 md:p-12 mb-8 text-center relative overflow-hidden" data-aos="zoom-in">
+      <div id="confettiContainer"></div>
+      
+      <div class="flex flex-col items-center gap-6">
+        <!-- Score Circle -->
+        <div class="score-circle bg-white shadow-xl animate-score" id="scoreCircle">
+          <div class="text-5xl md:text-6xl font-bold" id="scoreNumber">0</div>
+          <div class="text-slate-500 text-lg font-medium" id="scoreDenom">/ 0</div>
+        </div>
+
+        <!-- Pass/Fail Badge -->
+        <div id="resultBadge" class="px-8 py-3 rounded-2xl text-xl font-bold shadow-lg animate-score" style="animation-delay: 0.3s;">
+          กำลังโหลด...
+        </div>
+
+        <!-- Percentage -->
+        <div class="text-slate-600 text-lg font-medium" id="scorePercent" data-aos="fade-up" data-aos-delay="200">
+          --
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" data-aos="fade-up" data-aos-delay="300">
+      <div class="glass-card rounded-2xl p-4 text-center">
+        <div class="text-3xl mb-1"><i class="fa-solid fa-circle-check text-green-500"></i></div>
+        <div class="text-2xl font-bold text-green-600" id="statCorrect">0</div>
+        <div class="text-sm text-slate-500 font-medium">ตอบถูก</div>
+      </div>
+      <div class="glass-card rounded-2xl p-4 text-center">
+        <div class="text-3xl mb-1"><i class="fa-solid fa-circle-xmark text-red-500"></i></div>
+        <div class="text-2xl font-bold text-red-600" id="statWrong">0</div>
+        <div class="text-sm text-slate-500 font-medium">ตอบผิด</div>
+      </div>
+      <div class="glass-card rounded-2xl p-4 text-center">
+        <div class="text-3xl mb-1"><i class="fa-solid fa-circle-minus text-slate-400"></i></div>
+        <div class="text-2xl font-bold text-slate-500" id="statSkipped">0</div>
+        <div class="text-sm text-slate-500 font-medium">ไม่ได้ตอบ</div>
+      </div>
+      <div class="glass-card rounded-2xl p-4 text-center">
+        <div class="text-3xl mb-1"><i class="fa-solid fa-stopwatch text-blue-500"></i></div>
+        <div class="text-2xl font-bold text-blue-600" id="statTime">--:--</div>
+        <div class="text-sm text-slate-500 font-medium">เวลาที่ใช้</div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row gap-3 mb-8" data-aos="fade-up" data-aos-delay="400">
+      <button class="btn btn-primary flex-1 rounded-xl bg-gradient-to-r from-primary to-blue-800 border-none shadow-lg shadow-primary/30 text-lg" onclick="window.location.href='dashboard.html'">
+        <i class="fa-solid fa-house mr-2"></i> กลับหน้าหลัก
+      </button>
+      <button class="btn btn-secondary flex-1 rounded-xl border-none shadow-lg shadow-orange-300/30 text-lg text-white" onclick="retakeExam()">
+        <i class="fa-solid fa-rotate-right mr-2"></i> ทำข้อสอบใหม่
+      </button>
+    </div>
+
+    <!-- Review Section -->
+    <div class="mb-6" data-aos="fade-up" data-aos-delay="500">
+      <h3 class="text-2xl font-bold text-primary mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-magnifying-glass-chart"></i> เฉลยข้อสอบ
+      </h3>
+
+      <!-- Filter Buttons -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button class="filter-btn active btn btn-sm rounded-xl border-2" onclick="filterQuestions('all')" id="filterAll">
+          <i class="fa-solid fa-list mr-1"></i> ทั้งหมด <span class="badge badge-sm ml-1" id="countAll">0</span>
+        </button>
+        <button class="filter-btn btn btn-sm btn-outline rounded-xl border-2" onclick="filterQuestions('correct')" id="filterCorrect">
+          <i class="fa-solid fa-check mr-1"></i> ถูก <span class="badge badge-sm badge-success ml-1" id="countCorrect">0</span>
+        </button>
+        <button class="filter-btn btn btn-sm btn-outline rounded-xl border-2" onclick="filterQuestions('wrong')" id="filterWrong">
+          <i class="fa-solid fa-xmark mr-1"></i> ผิด <span class="badge badge-sm badge-error ml-1" id="countWrong">0</span>
+        </button>
+        <button class="filter-btn btn btn-sm btn-outline rounded-xl border-2" onclick="filterQuestions('skipped')" id="filterSkipped">
+          <i class="fa-solid fa-minus mr-1"></i> ไม่ตอบ <span class="badge badge-sm ml-1" id="countSkipped">0</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Questions Review List -->
+    <div id="reviewBody" class="space-y-4 pb-10">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="w-full text-center py-6 px-4 text-slate-500 text-sm font-medium z-20 bg-white/80 backdrop-blur-md border-t border-slate-200 mt-12 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+    <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+      <span>&copy; 2026 Mentra Solution Co., Ltd</span>
+      <span class="hidden md:inline-block text-slate-300">|</span>
+      <div class="flex items-center gap-2">
+        <span class="text-slate-400">พัฒนาโดย</span>
+        <a href="https://keexlab-th.github.io/" target="_blank" class="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 text-primary rounded-full hover:shadow-md hover:-translate-y-0.5 hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 hover:border-blue-200 transition-all duration-300 font-bold">
+          <i class="fa-solid fa-code text-secondary"></i> ธนภูมิ แดงประดับ
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./assets/questions_set1.js"></script>
+  <script src="./assets/questions_set2.js"></script>
+  <script src="./assets/questions_set3.js"></script>
+  <script src="./assets/questions_set4.js"></script>
+  <script src="./assets/questions_set5.js"></script>
+  <script src="./assets/elec_set1.js"></script>
+  <script src="./assets/elec_set2.js"></script>
+  <script src="./assets/elec_set3.js"></script>
+  <script src="./assets/elec_set4.js"></script>
+  <script src="./assets/elec_set5.js"></script>
+  <script src="./assets/app.js"></script>
+  <script>
+    AOS.init({ once: true });
+    const user = requireAuth();
+    const resultData = JSON.parse(sessionStorage.getItem('plc_last_result') || 'null');
+
+    if (!resultData) {
+      window.location.href = 'dashboard.html';
+    }
+
+    const letters = ['ก', 'ข', 'ค', 'ง'];
+
+    function renderResult() {
+      if (!resultData) return;
+
+      const { score, total, passed, passScore, timeTaken, details, setTitle } = resultData;
+      const pct = Math.round((score / total) * 100);
+      const scoreColor = passed ? '#22c55e' : '#ef4444';
+
+      // Title
+      document.title = `ผลการสอบ: ${setTitle} - ระบบฝึกทำข้อสอบ PLC`;
+
+      // Score Circle
+      const circle = document.getElementById('scoreCircle');
+      circle.style.setProperty('--score-color', scoreColor);
+      circle.style.setProperty('--score-pct', pct);
+      document.getElementById('scoreNumber').textContent = score;
+      document.getElementById('scoreNumber').style.color = scoreColor;
+      document.getElementById('scoreDenom').textContent = `/ ${total}`;
+
+      // Badge
+      const badge = document.getElementById('resultBadge');
+      if (passed) {
+        badge.className = 'px-8 py-3 rounded-2xl text-xl font-bold shadow-lg animate-score bg-gradient-to-r from-green-500 to-emerald-600 text-white';
+        badge.innerHTML = '<i class="fa-solid fa-trophy mr-2"></i> ผ่านเกณฑ์';
+        document.getElementById('scoreHero').classList.add('border-2', 'border-green-300');
+        // Confetti
+        spawnConfetti();
+      } else {
+        badge.className = 'px-8 py-3 rounded-2xl text-xl font-bold shadow-lg animate-score bg-gradient-to-r from-red-500 to-rose-600 text-white';
+        badge.innerHTML = '<i class="fa-solid fa-heart-crack mr-2"></i> ไม่ผ่านเกณฑ์';
+        document.getElementById('scoreHero').classList.add('border-2', 'border-red-200');
+      }
+
+      // Percentage
+      document.getElementById('scorePercent').innerHTML = `
+        คะแนน <strong>${pct}%</strong> &bull; 
+        เกณฑ์ผ่าน <strong>${passScore}</strong> ข้อ &bull;
+        <strong>${setTitle}</strong>
+      `;
+
+      // Stats
+      let correctCount = 0, wrongCount = 0, skippedCount = 0;
+      details.forEach(d => {
+        if (d.userAns === null || d.userAns === undefined) skippedCount++;
+        else if (d.isCorrect) correctCount++;
+        else wrongCount++;
+      });
+      document.getElementById('statCorrect').textContent = correctCount;
+      document.getElementById('statWrong').textContent = wrongCount;
+      document.getElementById('statSkipped').textContent = skippedCount;
+
+      // Time
+      const mins = Math.floor(timeTaken / 60);
+      const secs = timeTaken % 60;
+      document.getElementById('statTime').textContent = `${mins} นาที ${secs} วินาที`;
+
+      // Filter counts
+      document.getElementById('countAll').textContent = total;
+      document.getElementById('countCorrect').textContent = correctCount;
+      document.getElementById('countWrong').textContent = wrongCount;
+      document.getElementById('countSkipped').textContent = skippedCount;
+
+      // Render Review
+      renderReview(details, 'all');
+    }
+
+    function renderReview(details, filter) {
+      const body = document.getElementById('reviewBody');
+      body.innerHTML = '';
+
+      details.forEach((d, i) => {
+        const isSkipped = d.userAns === null || d.userAns === undefined;
+        const isCorrect = d.isCorrect;
+
+        // Filter
+        if (filter === 'correct' && !isCorrect) return;
+        if (filter === 'wrong' && (isCorrect || isSkipped)) return;
+        if (filter === 'skipped' && !isSkipped) return;
+
+        let cardClass, statusIcon, statusText;
+        if (isSkipped) {
+          cardClass = 'result-card-skip';
+          statusIcon = '<i class="fa-solid fa-circle-minus text-slate-400"></i>';
+          statusText = '<span class="text-slate-500 font-bold">ไม่ได้ตอบ</span>';
+        } else if (isCorrect) {
+          cardClass = 'result-card-correct';
+          statusIcon = '<i class="fa-solid fa-circle-check text-green-500"></i>';
+          statusText = '<span class="text-green-600 font-bold">ถูกต้อง</span>';
+        } else {
+          cardClass = 'result-card-wrong';
+          statusIcon = '<i class="fa-solid fa-circle-xmark text-red-500"></i>';
+          statusText = '<span class="text-red-600 font-bold">ผิด</span>';
+        }
+
+        const choicesHtml = d.choices.map((c, ci) => {
+          let cls = 'p-3 rounded-xl mb-2 flex items-start gap-3 transition-all border-2 ';
+          const cleanChoice = c.replace(/^[กขคง]\.\s*/, '');
+          
+          if (ci === d.correct) {
+            cls += 'bg-green-50 border-green-300 text-green-800';
+          } else if (ci === d.userAns && !isCorrect) {
+            cls += 'bg-red-50 border-red-300 text-red-800';
+          } else {
+            cls += 'bg-white border-slate-100 text-slate-600';
+          }
+
+          let icon = '';
+          if (ci === d.correct) {
+            icon = '<i class="fa-solid fa-check text-green-500 mt-1"></i>';
+          } else if (ci === d.userAns && !isCorrect) {
+            icon = '<i class="fa-solid fa-xmark text-red-500 mt-1"></i>';
+          } else {
+            icon = '<span class="w-4"></span>';
+          }
+
+          return `
+            <div class="${cls}">
+              ${icon}
+              <div class="flex-1">
+                <span class="font-bold text-slate-400 mr-1">${letters[ci]}.</span>
+                <span>${cleanChoice}</span>
+              </div>
+              ${ci === d.correct ? '<span class="badge badge-success badge-sm text-white">เฉลย</span>' : ''}
+              ${ci === d.userAns && ci !== d.correct ? '<span class="badge badge-error badge-sm text-white">คำตอบคุณ</span>' : ''}
+              ${ci === d.userAns && ci === d.correct ? '<span class="badge badge-success badge-sm text-white">คำตอบคุณ ✓</span>' : ''}
+            </div>
+          `;
+        }).join('');
+
+        body.innerHTML += `
+          <div class="glass-card rounded-2xl p-5 md:p-6 ${cardClass} shadow-sm hover-lift" data-aos="fade-up">
+            <div class="flex justify-between items-start gap-3 mb-4 border-b border-slate-100 pb-3">
+              <div class="flex items-center gap-3">
+                <span class="bg-slate-100 text-slate-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">${i + 1}</span>
+                <span class="text-lg">${statusIcon}</span>
+                ${statusText}
+              </div>
+            </div>
+            <div class="text-lg font-medium text-slate-800 mb-4 leading-relaxed">${d.text}</div>
+            <div class="space-y-2">
+              ${choicesHtml}
+            </div>
+          </div>
+        `;
+      });
+
+      if (body.innerHTML === '') {
+        body.innerHTML = `
+          <div class="glass-card rounded-2xl p-12 text-center">
+            <div class="text-5xl text-slate-300 mb-4"><i class="fa-solid fa-filter-circle-xmark"></i></div>
+            <p class="text-slate-500 font-medium">ไม่มีข้อที่ตรงกับตัวกรอง</p>
+          </div>
+        `;
+      }
+    }
+
+    function filterQuestions(filter) {
+      // Update active button
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.classList.add('btn-outline');
+      });
+      const activeBtn = document.getElementById('filter' + filter.charAt(0).toUpperCase() + filter.slice(1));
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+        activeBtn.classList.remove('btn-outline');
+      }
+
+      renderReview(resultData.details, filter);
+    }
+
+    function retakeExam() {
+      // Set is already in sessionStorage from previous exam
+      window.location.href = 'exam.html';
+    }
+
+    function spawnConfetti() {
+      const container = document.getElementById('confettiContainer');
+      const colors = ['#22c55e', '#fb923c', '#3b82f6', '#a855f7', '#ec4899', '#eab308'];
+      for (let i = 0; i < 50; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        piece.style.animationDelay = Math.random() * 1.5 + 's';
+        piece.style.width = (Math.random() * 8 + 6) + 'px';
+        piece.style.height = (Math.random() * 8 + 6) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        document.body.appendChild(piece);
+        // Remove after animation
+        setTimeout(() => piece.remove(), 5000);
+      }
+    }
+
+    // Init
+    renderResult();
+  </script>
+</body>
+</html>
