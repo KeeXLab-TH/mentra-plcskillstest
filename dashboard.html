@@ -51,21 +51,21 @@
 
   <div class="container mx-auto px-4 mt-8">
     <!-- Hero Section -->
-    <div class="glass-card rounded-3xl p-8 mb-8 bg-gradient-to-br from-primary to-blue-800 text-white shadow-xl relative overflow-hidden" data-aos="fade-down" data-aos-duration="600">
-      <div class="absolute right-0 top-0 opacity-10 text-[10rem] -mt-10 -mr-10"><i class="fa-solid fa-microchip"></i></div>
+    <div class="glass-card rounded-3xl p-6 md:p-8 mb-8 bg-gradient-to-br from-primary to-blue-800 text-white shadow-xl relative overflow-hidden" data-aos="fade-down" data-aos-duration="600">
+      <div class="absolute right-0 top-0 opacity-10 text-[8rem] md:text-[10rem] -mt-10 -mr-10 pointer-events-none"><i class="fa-solid fa-microchip"></i></div>
       <div class="relative z-10">
-        <h2 class="text-3xl font-bold mb-2 drop-shadow-md" id="heroGreeting">สวัสดี!</h2>
-        <p class="text-blue-100 text-lg opacity-90">มาตรฐานฝีมือแรงงานแห่งชาติ สาขาช่างโปรแกรมเมเบิ้ลลอจิกคอนโทรลเลอร์ ระดับ ๑</p>
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 md:mb-3 drop-shadow-md break-words" id="heroGreeting">สวัสดี!</h2>
+        <p class="text-blue-100 text-sm md:text-lg opacity-90 leading-relaxed">มาตรฐานฝีมือแรงงานแห่งชาติ สาขาช่างโปรแกรมเมเบิ้ลลอจิกคอนโทรลเลอร์ ระดับ ๑</p>
       </div>
     </div>
 
     <!-- Stats -->
-    <div class="w-full mb-10 overflow-x-auto pb-2" data-aos="fade-up" data-aos-delay="100">
-      <div class="stats shadow w-full glass-card bg-white/80" id="statsRow">
-        <div class="stat place-items-center"><div class="skeleton-pulse h-8 w-16"></div><div class="skeleton-pulse h-4 w-24 mt-2"></div></div>
-        <div class="stat place-items-center"><div class="skeleton-pulse h-8 w-16"></div><div class="skeleton-pulse h-4 w-24 mt-2"></div></div>
-        <div class="stat place-items-center"><div class="skeleton-pulse h-8 w-16"></div><div class="skeleton-pulse h-4 w-24 mt-2"></div></div>
-        <div class="stat place-items-center"><div class="skeleton-pulse h-8 w-16"></div><div class="skeleton-pulse h-4 w-24 mt-2"></div></div>
+    <div class="w-full mb-10" data-aos="fade-up" data-aos-delay="100">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="statsRow">
+        <div class="glass-card bg-white/80 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-sm"><div class="skeleton-pulse h-8 w-16 mb-2"></div><div class="skeleton-pulse h-3 w-20"></div></div>
+        <div class="glass-card bg-white/80 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-sm"><div class="skeleton-pulse h-8 w-16 mb-2"></div><div class="skeleton-pulse h-3 w-20"></div></div>
+        <div class="glass-card bg-white/80 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-sm"><div class="skeleton-pulse h-8 w-16 mb-2"></div><div class="skeleton-pulse h-3 w-20"></div></div>
+        <div class="glass-card bg-white/80 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-sm"><div class="skeleton-pulse h-8 w-16 mb-2"></div><div class="skeleton-pulse h-3 w-20"></div></div>
       </div>
     </div>
 
@@ -125,25 +125,25 @@
 
       function renderStats(allSetsLen, attemptedLen, passedLen, histLen) {
         document.getElementById('statsRow').innerHTML = `
-          <div class="stat place-items-center">
-            <div class="stat-figure text-primary opacity-50 text-3xl"><i class="fa-solid fa-layer-group"></i></div>
-            <div class="stat-title text-slate-500 font-medium">ชุดข้อสอบทั้งหมด</div>
-            <div class="stat-value text-primary">${allSetsLen}</div>
+          <div class="glass-card bg-white/80 rounded-2xl p-3 md:p-4 flex flex-col items-center justify-center text-center shadow-sm hover-lift hover:shadow-md transition-all">
+            <div class="text-primary opacity-80 text-xl md:text-3xl mb-1 md:mb-2"><i class="fa-solid fa-layer-group"></i></div>
+            <div class="text-2xl md:text-3xl font-bold text-primary mb-1">${allSetsLen}</div>
+            <div class="text-[10px] md:text-xs text-slate-500 font-medium uppercase tracking-wider">ชุดข้อสอบทั้งหมด</div>
           </div>
-          <div class="stat place-items-center">
-            <div class="stat-figure text-blue-500 opacity-50 text-3xl"><i class="fa-solid fa-pen-to-square"></i></div>
-            <div class="stat-title text-slate-500 font-medium">ชุดที่ทำแล้ว</div>
-            <div class="stat-value text-blue-600">${attemptedLen}</div>
+          <div class="glass-card bg-white/80 rounded-2xl p-3 md:p-4 flex flex-col items-center justify-center text-center shadow-sm hover-lift hover:shadow-md transition-all">
+            <div class="text-blue-500 opacity-80 text-xl md:text-3xl mb-1 md:mb-2"><i class="fa-solid fa-pen-to-square"></i></div>
+            <div class="text-2xl md:text-3xl font-bold text-blue-600 mb-1">${attemptedLen}</div>
+            <div class="text-[10px] md:text-xs text-slate-500 font-medium uppercase tracking-wider">ชุดที่ทำแล้ว</div>
           </div>
-          <div class="stat place-items-center">
-            <div class="stat-figure text-green-500 opacity-50 text-3xl"><i class="fa-solid fa-circle-check"></i></div>
-            <div class="stat-title text-slate-500 font-medium">ชุดที่ผ่าน</div>
-            <div class="stat-value text-green-500">${passedLen}</div>
+          <div class="glass-card bg-white/80 rounded-2xl p-3 md:p-4 flex flex-col items-center justify-center text-center shadow-sm hover-lift hover:shadow-md transition-all">
+            <div class="text-green-500 opacity-80 text-xl md:text-3xl mb-1 md:mb-2"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="text-2xl md:text-3xl font-bold text-green-500 mb-1">${passedLen}</div>
+            <div class="text-[10px] md:text-xs text-slate-500 font-medium uppercase tracking-wider">ชุดที่ผ่าน</div>
           </div>
-          <div class="stat place-items-center">
-            <div class="stat-figure text-orange-500 opacity-50 text-3xl"><i class="fa-solid fa-clock-rotate-left"></i></div>
-            <div class="stat-title text-slate-500 font-medium">ทำข้อสอบทั้งหมด (ครั้ง)</div>
-            <div class="stat-value text-orange-500">${histLen}</div>
+          <div class="glass-card bg-white/80 rounded-2xl p-3 md:p-4 flex flex-col items-center justify-center text-center shadow-sm hover-lift hover:shadow-md transition-all">
+            <div class="text-orange-500 opacity-80 text-xl md:text-3xl mb-1 md:mb-2"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div class="text-2xl md:text-3xl font-bold text-orange-500 mb-1">${histLen}</div>
+            <div class="text-[10px] md:text-xs text-slate-500 font-medium uppercase tracking-wider">ทำข้อสอบ (ครั้ง)</div>
           </div>`;
       }
 
@@ -362,12 +362,14 @@
     }
 
     function parseMarkdown(text) {
-      // Simple markdown parser for bold, italic, code, lists
+      // Simple markdown parser
       let html = text
-        .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')
-        .replace(/\\*(.*?)\\*/g, '<em>$1</em>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
         .replace(/`(.*?)`/g, '<code class="bg-slate-100 px-1 py-0.5 rounded text-primary text-xs">$1</code>')
-        .replace(/\\n/g, '<br>');
+        .replace(/### (.*?)\n/g, '<h3 class="font-bold text-md mt-2 mb-1">$1</h3>\n')
+        .replace(/## (.*?)\n/g, '<h2 class="font-bold text-lg mt-2 mb-1 text-primary">$1</h2>\n')
+        .replace(/\n/g, '<br>');
       
       // Fix lists
       html = html.replace(/<br>- (.*?)/g, '<br>• $1');
