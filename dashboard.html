@@ -255,7 +255,189 @@
       sessionStorage.setItem('plc_current_set', setId);
       window.location.href = 'exam.html';
     }
+
+    // ====== AI Chat Agent Logic ======
+    let aiChatOpen = false;
+    let aiConversation = [
+      { role: "system", content: "คุณคือผู้ช่วย AI ชื่อ 'ผู้ช่วย AI PLC' คอยตอบคำถามและให้คำปรึกษาเกี่ยวกับการสอบช่างควบคุมด้วยระบบโปรแกรมเมเบิ้ลลอจิกคอนโทรลเลอร์ (PLC) และช่างไฟฟ้าภายในอาคาร อธิบายให้เข้าใจง่าย เป็นมิตร ใช้ภาษาไทย และสามารถใช้ Markdown จัดรูปแบบได้" }
+    ];
+
+    function toggleAiChat() {
+      const panel = document.getElementById('aiChatPanel');
+      const toggleIcon = document.getElementById('aiChatToggleBtn').querySelector('i');
+      aiChatOpen = !aiChatOpen;
+      if (aiChatOpen) {
+        panel.style.display = 'flex';
+        setTimeout(() => { panel.classList.remove('scale-95', 'opacity-0'); panel.classList.add('scale-100', 'opacity-100'); }, 10);
+        toggleIcon.className = 'fa-solid fa-chevron-down text-2xl';
+        document.getElementById('aiChatInput').focus();
+        // Check API key
+        if (!getGeminiApiKey()) {
+          document.getElementById('aiApiKeyWarning').classList.remove('hidden');
+          document.getElementById('aiChatInput').disabled = true;
+          document.getElementById('aiChatSendBtn').disabled = true;
+        } else {
+          document.getElementById('aiApiKeyWarning').classList.add('hidden');
+        }
+      } else {
+        panel.classList.remove('scale-100', 'opacity-100');
+        panel.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => { panel.style.display = 'none'; }, 300);
+        toggleIcon.className = 'fa-solid fa-message text-2xl';
+      }
+    }
+
+    function sendAiMessage(text) {
+      document.getElementById('aiChatInput').value = text;
+      handleAiChatSubmit(new Event('submit'));
+    }
+
+    async function handleAiChatSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('aiChatInput');
+      const msg = input.value.trim();
+      if (!msg) return;
+      const apiKey = getGeminiApiKey();
+      if (!apiKey) return;
+
+      input.value = '';
+      document.getElementById('aiQuickActions').style.display = 'none';
+      appendMessage('user', msg);
+      aiConversation.push({ role: "user", content: msg });
+
+      // Add loading bubble
+      const loadingId = appendMessage('assistant', '<span class="loading loading-dots loading-sm"></span>');
+      
+      try {
+        // Format for Gemini API (gemini-2.0-flash)
+        const geminiMessages = aiConversation.map(m => ({
+          role: m.role === 'assistant' ? 'model' : 'user', // System goes as user in old gemini, but v1beta supports system_instruction
+          parts: [{ text: m.content }]
+        }));
+        
+        // Extract system prompt
+        const systemPrompt = geminiMessages.shift().parts[0].text;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: systemPrompt }] },
+            contents: geminiMessages
+          })
+        });
+
+        if (!response.ok) throw new Error('API Error');
+        const data = await response.json();
+        const aiText = data.candidates[0].content.parts[0].text;
+        
+        aiConversation.push({ role: "assistant", content: aiText });
+        updateMessage(loadingId, parseMarkdown(aiText));
+      } catch (error) {
+        updateMessage(loadingId, 'ขออภัย เกิดข้อผิดพลาดในการเชื่อมต่อกับ AI กรุณาตรวจสอบ API Key หรือลองอีกครั้ง');
+      }
+    }
+
+    function appendMessage(role, text) {
+      const container = document.getElementById('aiChatMessages');
+      const id = 'msg_' + Date.now();
+      const isUser = role === 'user';
+      
+      const html = isUser ? `
+        <div class="flex items-start gap-2 justify-end" id="${id}">
+          <div class="bg-primary text-white p-3 rounded-2xl rounded-tr-sm shadow-sm max-w-[85%]">${text}</div>
+        </div>
+      ` : `
+        <div class="flex items-start gap-2" id="${id}">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-blue-800 flex items-center justify-center text-white flex-shrink-0 shadow-sm text-xs"><i class="fa-solid fa-robot"></i></div>
+          <div class="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-sm shadow-sm text-slate-700 max-w-[85%] overflow-x-auto">${text}</div>
+        </div>
+      `;
+      
+      container.insertAdjacentHTML('beforeend', html);
+      container.scrollTop = container.scrollHeight;
+      return id;
+    }
+
+    function updateMessage(id, text) {
+      const el = document.getElementById(id);
+      if (el) {
+        const contentDiv = el.querySelector('.bg-white');
+        if(contentDiv) contentDiv.innerHTML = text;
+        const container = document.getElementById('aiChatMessages');
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+
+    function parseMarkdown(text) {
+      // Simple markdown parser for bold, italic, code, lists
+      let html = text
+        .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')
+        .replace(/\\*(.*?)\\*/g, '<em>$1</em>')
+        .replace(/`(.*?)`/g, '<code class="bg-slate-100 px-1 py-0.5 rounded text-primary text-xs">$1</code>')
+        .replace(/\\n/g, '<br>');
+      
+      // Fix lists
+      html = html.replace(/<br>- (.*?)/g, '<br>• $1');
+      return html;
+    }
   </script>
+
+  <!-- AI Chat Widget -->
+  <div id="aiChatWidget" class="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
+    <!-- Chat Panel -->
+    <div id="aiChatPanel" class="bg-white w-80 sm:w-96 rounded-2xl shadow-2xl border border-slate-200 mb-4 overflow-hidden flex flex-col transition-all duration-300 transform scale-95 opacity-0 origin-bottom-right pointer-events-auto" style="height: 500px; max-height: calc(100vh - 120px); display: none;">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-primary to-blue-800 text-white p-4 flex justify-between items-center shadow-md z-10">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl backdrop-blur-sm border border-white/30">
+            <i class="fa-solid fa-robot"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm">ผู้ช่วย AI PLC</h3>
+            <p class="text-[10px] text-blue-100 opacity-90"><i class="fa-solid fa-circle text-green-400 text-[8px] mr-1"></i>พร้อมให้คำปรึกษา</p>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm btn-circle text-white hover:bg-white/20" onclick="toggleAiChat()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      
+      <!-- Messages Area -->
+      <div id="aiChatMessages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 text-sm">
+        <div class="flex items-start gap-2">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-blue-800 flex items-center justify-center text-white flex-shrink-0 shadow-sm text-xs"><i class="fa-solid fa-robot"></i></div>
+          <div class="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-sm shadow-sm text-slate-700">
+            สวัสดีครับ! 👋 ผมคือผู้ช่วย AI สำหรับเตรียมสอบ PLC และไฟฟ้า มีอะไรให้ผมช่วยอธิบายหรือทบทวนไหมครับ?
+          </div>
+        </div>
+        <!-- Quick Actions -->
+        <div class="flex flex-wrap gap-2 pl-10" id="aiQuickActions">
+          <button class="badge badge-outline badge-primary hover:bg-primary hover:text-white cursor-pointer transition-colors" onclick="sendAiMessage('สรุปหลักการทำงานของ PLC ให้ฟังหน่อย')">สรุปหลักการ PLC</button>
+          <button class="badge badge-outline badge-primary hover:bg-primary hover:text-white cursor-pointer transition-colors" onclick="sendAiMessage('อธิบาย Ladder Diagram เบื้องต้น')">สอน Ladder Diagram</button>
+          <button class="badge badge-outline badge-primary hover:bg-primary hover:text-white cursor-pointer transition-colors" onclick="sendAiMessage('การต่อสายเซนเซอร์ NPN กับ PNP ต่างกันอย่างไร?')">การต่อสายเซนเซอร์</button>
+        </div>
+      </div>
+      
+      <!-- Input Area -->
+      <div class="p-3 bg-white border-t border-slate-100 shadow-[0_-10px_20px_rgba(0,0,0,0.02)] z-10">
+        <div id="aiApiKeyWarning" class="text-[10px] text-error text-center mb-2 hidden">
+          <i class="fa-solid fa-triangle-exclamation"></i> ไม่พบ API Key กรุณาให้ผู้ดูแลระบบตั้งค่า
+        </div>
+        <form id="aiChatForm" class="flex gap-2" onsubmit="handleAiChatSubmit(event)">
+          <input type="text" id="aiChatInput" class="input input-bordered input-sm flex-1 rounded-full bg-slate-50 focus:bg-white transition-colors" placeholder="พิมพ์คำถามที่นี่..." autocomplete="off">
+          <button type="submit" class="btn btn-primary btn-sm btn-circle bg-gradient-to-br from-primary to-blue-800 border-none shadow-md" id="aiChatSendBtn">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Floating Button -->
+    <button id="aiChatToggleBtn" class="btn btn-circle btn-lg bg-gradient-to-r from-primary to-blue-800 border-none shadow-[0_10px_25px_rgba(26,82,118,0.4)] text-white hover:scale-105 transition-transform duration-300 pointer-events-auto" onclick="toggleAiChat()">
+      <i class="fa-solid fa-message text-2xl"></i>
+    </button>
+  </div>
 
   <!-- Footer -->
   <footer class="w-full text-center py-5 px-4 text-slate-500 text-sm font-medium z-20 bg-white/80 backdrop-blur-md border-t border-slate-200 mt-12">

@@ -322,3 +322,20 @@ function hideLoading() {
     Swal.close();
   }
 }
+
+// ====== Answer Review Setting (Admin-controlled) ======
+function getReviewSetting() {
+  return JSON.parse(localStorage.getItem('plc_allow_review') || 'false');
+}
+function setReviewSetting(val) {
+  localStorage.setItem('plc_allow_review', JSON.stringify(val));
+  fbWrite('plc_allow_review', val);
+}
+
+// ====== AI Chat (Gemini API Key) ======
+function getGeminiApiKey() {
+  return localStorage.getItem('plc_gemini_api_key') || '';
+}
+function setGeminiApiKey(key) {
+  localStorage.setItem('plc_gemini_api_key', key);
+}
