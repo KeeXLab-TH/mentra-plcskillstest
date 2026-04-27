@@ -72,6 +72,7 @@
         <span id="pendingBadge" class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white hidden">0</span>
       </button>
       <button class="tab tab-btn font-bold text-slate-600 h-10 px-6 rounded-xl" onclick="showTab('results', this)"><i class="fa-solid fa-clipboard-list mr-2"></i> ผลการสอบ</button>
+      <button class="tab tab-btn font-bold text-slate-600 h-10 px-6 rounded-xl" onclick="showTab('analytics', this)"><i class="fa-solid fa-magnifying-glass-chart mr-2"></i> วิเคราะห์ข้อสอบ</button>
       <button class="tab tab-btn font-bold text-slate-600 h-10 px-6 rounded-xl" onclick="showTab('sets', this)"><i class="fa-solid fa-book-open mr-2"></i> ชุดข้อสอบ</button>
       <button class="tab tab-btn font-bold text-slate-600 h-10 px-6 rounded-xl" onclick="showTab('reports', this)"><i class="fa-solid fa-triangle-exclamation mr-2"></i> แจ้งปัญหา</button>
       <button class="tab tab-btn font-bold text-slate-600 h-10 px-6 rounded-xl" onclick="showTab('siteSettings', this)"><i class="fa-solid fa-gear mr-2"></i> ตั้งค่า</button>
@@ -231,6 +232,31 @@
               <!-- Rendered by JS -->
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: ANALYTICS -->
+    <div id="tabAnalytics" class="tab-content">
+      <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+        <h2 class="text-2xl font-bold text-primary flex items-center gap-2"><i class="fa-solid fa-magnifying-glass-chart text-secondary"></i> สรุปผลวิเคราะห์คำตอบที่ผิด</h2>
+      </div>
+
+      <div class="glass-card bg-white/80 p-4 rounded-3xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-center">
+        <label class="font-bold text-slate-700">เลือกชุดข้อสอบเพื่อวิเคราะห์:</label>
+        <select id="analyticsSetFilter" class="select select-bordered select-sm max-w-xs" onchange="renderAnalyticsContent()">
+          <option value="" disabled selected>— เลือกชุดข้อสอบ —</option>
+        </select>
+        <div id="analyticsOverview" class="text-sm font-bold text-slate-500 ml-auto hidden">
+          มีผู้เข้าสอบ: <span id="analyticsCount" class="text-primary">0</span> ครั้ง
+        </div>
+      </div>
+
+      <div id="analyticsContent" class="space-y-4">
+        <!-- Rendered by JS -->
+        <div class="text-center py-10 text-slate-400">
+          <i class="fa-solid fa-arrow-pointer text-4xl mb-3 opacity-50"></i>
+          <p>กรุณาเลือกชุดข้อสอบที่ต้องการวิเคราะห์จากด้านบน</p>
         </div>
       </div>
     </div>
@@ -476,6 +502,7 @@
       if (id === 'users') renderUsers();
       if (id === 'approvals') renderApprovals();
       if (id === 'results') renderResults();
+      if (id === 'analytics') renderAnalytics();
       if (id === 'sets') renderSetsList();
       if (id === 'reports') renderReports();
     }
@@ -703,6 +730,134 @@
           Swal.fire({ icon: 'success', title: 'อนุมัติสำเร็จ', showConfirmButton: false, timer: 1500 });
         }
       }
+    }
+
+    // ==== ANALYTICS ====
+    function renderAnalytics() {
+      const allHist = getAllHistoryArray();
+      const filterEl = document.getElementById('analyticsSetFilter');
+      const curVal = filterEl.value;
+
+      // หารายชื่อชุดข้อสอบทั้งหมดที่มีประวัติ
+      const setIds = [...new Set(allHist.map(h => h.setId))];
+      
+      let opts = '<option value="" disabled selected>— เลือกชุดข้อสอบ —</option>';
+      setIds.forEach(id => {
+        const histForSet = allHist.filter(h => h.setId == id);
+        const title = histForSet[0] ? histForSet[0].setTitle : `ชุดที่ ${id}`;
+        opts += `<option value="${id}">${title} (${histForSet.length} ครั้ง)</option>`;
+      });
+      filterEl.innerHTML = opts;
+      if (curVal && setIds.includes(curVal)) { filterEl.value = curVal; }
+      
+      renderAnalyticsContent();
+    }
+
+    function renderAnalyticsContent() {
+      const setId = document.getElementById('analyticsSetFilter').value;
+      const content = document.getElementById('analyticsContent');
+      const overview = document.getElementById('analyticsOverview');
+      const countLabel = document.getElementById('analyticsCount');
+      
+      if (!setId) return;
+
+      const allHist = getAllHistoryArray().filter(h => String(h.setId) === String(setId));
+      overview.classList.remove('hidden');
+      countLabel.textContent = allHist.length;
+
+      if (allHist.length === 0) {
+        content.innerHTML = `<div class="text-center py-10 text-slate-400">ไม่พบประวัติการทำข้อสอบชุดนี้</div>`;
+        return;
+      }
+
+      // Aggregate
+      const qStats = {}; // { "question text": { wrong: 0, total: 0, correctAns: 0, choices: [], wrongAnswers: {} } }
+      allHist.forEach(h => {
+        if (!h.details || !Array.isArray(h.details)) return;
+        h.details.forEach(d => {
+          const txt = d.text;
+          if (!qStats[txt]) {
+            qStats[txt] = { wrong: 0, total: 0, correctAns: d.correct, choices: d.choices || [], wrongAnswers: {} };
+          }
+          qStats[txt].total++;
+          if (!d.isCorrect) {
+            qStats[txt].wrong++;
+            if (d.userAns !== null && d.userAns !== undefined) {
+              qStats[txt].wrongAnswers[d.userAns] = (qStats[txt].wrongAnswers[d.userAns] || 0) + 1;
+            }
+          }
+        });
+      });
+
+      // Convert to array and sort by wrong percentage
+      const statsArr = Object.keys(qStats).map(txt => {
+        const s = qStats[txt];
+        const pct = s.total > 0 ? (s.wrong / s.total) * 100 : 0;
+        return { text: txt, ...s, percent: pct };
+      });
+      
+      statsArr.sort((a, b) => b.percent - a.percent);
+
+      if (statsArr.length === 0) {
+        content.innerHTML = `<div class="text-center py-10 text-slate-400">ไม่มีข้อมูลรายละเอียดข้อสอบ</div>`;
+        return;
+      }
+
+      content.innerHTML = statsArr.map((s, i) => {
+        // Color based on percentage
+        let colorClass = 'bg-green-500';
+        let badgeClass = 'badge-success text-white';
+        let bgClass = 'bg-white';
+        if (s.percent >= 70) { colorClass = 'bg-red-500'; badgeClass = 'badge-error text-white'; bgClass = 'bg-red-50/30'; }
+        else if (s.percent >= 40) { colorClass = 'bg-orange-500'; badgeClass = 'badge-warning text-white'; bgClass = 'bg-orange-50/30'; }
+        else if (s.percent > 0) { colorClass = 'bg-blue-500'; badgeClass = 'bg-blue-100 text-blue-700'; }
+
+        const cText = s.choices[s.correctAns] ? `<div class="text-sm text-green-700 mt-2 bg-green-50 p-2 rounded-lg border border-green-100"><i class="fa-solid fa-check-circle mr-1"></i> <strong>เฉลย:</strong> ${s.choices[s.correctAns].replace(/^[กขคง]\.\s*/, '')}</div>` : '';
+
+        // Generate wrong answers summary
+        let wAnsHtml = '';
+        if (s.wrong > 0 && Object.keys(s.wrongAnswers).length > 0) {
+          const wList = Object.keys(s.wrongAnswers)
+            .map(idx => ({ idx, count: s.wrongAnswers[idx] }))
+            .sort((a,b) => b.count - a.count);
+          
+          wAnsHtml = `<div class="mt-3 pt-3 border-t border-slate-200/60">
+            <div class="text-xs font-bold text-slate-500 mb-2"><i class="fa-solid fa-reply"></i> คำตอบที่คนมักตอบผิด:</div>
+            <div class="flex flex-wrap gap-2">
+              ${wList.map(w => {
+                const choiceText = s.choices[w.idx] ? s.choices[w.idx].replace(/^[กขคง]\.\s*/, '') : `ตัวเลือกที่ ${parseInt(w.idx)+1}`;
+                return `<div class="badge badge-outline text-xs py-3 px-3 bg-white text-slate-600 border-slate-200 shadow-sm">
+                  <span class="font-bold text-red-500 mr-1">❌ ${choiceText}</span> <span class="opacity-60 ml-1">(${w.count} คน)</span>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>`;
+        }
+
+        return `
+          <div class="glass-card ${bgClass} p-5 rounded-2xl border border-slate-200">
+            <div class="flex flex-col md:flex-row gap-4 justify-between items-start">
+              <div class="flex-1 w-full md:w-auto">
+                <div class="flex gap-2 items-start mb-2">
+                  <div class="badge ${badgeClass} font-bold mt-0.5 whitespace-nowrap">อันดับ ${i+1}</div>
+                  <h4 class="font-bold text-slate-800 text-base leading-relaxed break-words">${s.text}</h4>
+                </div>
+                ${cText}
+                ${wAnsHtml}
+              </div>
+              <div class="md:w-64 w-full flex-none bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                <div class="flex justify-between text-xs font-bold mb-1">
+                  <span class="text-slate-500">ตอบผิด ${s.wrong} จาก ${s.total} ครั้ง</span>
+                  <span class="${colorClass.replace('bg-', 'text-')}">${Math.round(s.percent)}%</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2">
+                  <div class="${colorClass} h-2 rounded-full" style="width: ${s.percent}%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     async function showCreateUserModal() {
