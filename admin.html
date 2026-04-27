@@ -67,6 +67,10 @@
     <div class="tabs tabs-boxed bg-white/60 backdrop-blur shadow-sm p-2 gap-1 mb-8 overflow-x-auto whitespace-nowrap justify-start sm:justify-center border border-slate-200" id="adminTabsBar">
       <button class="tab tab-btn tab-active font-bold text-slate-600 h-10 px-6 rounded-xl" onclick="showTab('overview', this)"><i class="fa-solid fa-chart-pie mr-2"></i> ภาพรวม</button>
       <button class="tab tab-btn font-bold text-slate-600 h-10 px-6 rounded-xl" onclick="showTab('users', this)"><i class="fa-solid fa-users mr-2"></i> ผู้ใช้</button>
+      <button class="tab tab-btn font-bold text-slate-600 h-10 px-6 rounded-xl relative" onclick="showTab('approvals', this)">
+        <i class="fa-solid fa-user-clock mr-2"></i> คำขออนุมัติ
+        <span id="pendingBadge" class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white hidden">0</span>
+      </button>
       <button class="tab tab-btn font-bold text-slate-600 h-10 px-6 rounded-xl" onclick="showTab('results', this)"><i class="fa-solid fa-clipboard-list mr-2"></i> ผลการสอบ</button>
       <button class="tab tab-btn font-bold text-slate-600 h-10 px-6 rounded-xl" onclick="showTab('sets', this)"><i class="fa-solid fa-book-open mr-2"></i> ชุดข้อสอบ</button>
       <button class="tab tab-btn font-bold text-slate-600 h-10 px-6 rounded-xl" onclick="showTab('reports', this)"><i class="fa-solid fa-triangle-exclamation mr-2"></i> แจ้งปัญหา</button>
@@ -149,6 +153,31 @@
               </tr>
             </thead>
             <tbody id="usersTableBody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: APPROVALS -->
+    <div id="tabApprovals" class="tab-content">
+      <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+        <h2 class="text-2xl font-bold text-primary flex items-center gap-2"><i class="fa-solid fa-user-clock text-secondary"></i> คำขออนุมัติเข้าใช้งาน</h2>
+      </div>
+
+      <div class="glass-card bg-white/80 rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="table table-zebra w-full text-sm">
+            <thead class="bg-slate-100/50 text-slate-600">
+              <tr>
+                <th>ชื่อ-นามสกุล</th>
+                <th>รหัสผู้ใช้</th>
+                <th>ประเภท</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="approvalsTableBody">
               <!-- Rendered by JS -->
             </tbody>
           </table>
@@ -445,9 +474,21 @@
       // Auto-render
       if (id === 'overview') renderOverview();
       if (id === 'users') renderUsers();
+      if (id === 'approvals') renderApprovals();
       if (id === 'results') renderResults();
       if (id === 'sets') renderSetsList();
       if (id === 'reports') renderReports();
+    }
+
+    function updatePendingBadge() {
+      const pendingCount = getUsers().filter(u => u.status === 'pending').length;
+      const badge = document.getElementById('pendingBadge');
+      if (pendingCount > 0) {
+        badge.textContent = pendingCount;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
     }
 
     function confirmLogout() {
@@ -516,13 +557,14 @@
       });
     }
 
-    // ==== USERS ====
     function renderUsers() {
       const term = document.getElementById('userSearchInput').value.toLowerCase();
       const role = document.getElementById('userRoleFilter').value;
       const allUsers = getUsers();
       
       const filtered = allUsers.filter(u => {
+        // Exclude pending users from this tab
+        if (u.status === 'pending') return false;
         const mTerm = (u.name.toLowerCase().includes(term) || u.studentId.toLowerCase().includes(term));
         const mRole = role ? (u.role === role) : true;
         return mTerm && mRole;
@@ -534,8 +576,7 @@
 
       filtered.forEach(u => {
         const isAdm = u.role === 'admin';
-        const isPending = u.status === 'pending';
-        let statusBadge = isPending ? '<div class="badge badge-warning badge-sm">รออนุมัติ</div>' : '<div class="badge badge-success text-white badge-sm">ใช้งานได้</div>';
+        let statusBadge = '<div class="badge badge-success text-white badge-sm">ใช้งานได้</div>';
         
         let expireText = '-';
         if (u.expireAt && u.expireAt !== 'unlimited') {
@@ -545,21 +586,13 @@
           } else {
              expireText = new Date(u.expireAt).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
           }
-        } else if (u.expireAt === 'unlimited' || (!isPending && !isAdm)) {
+        } else if (u.expireAt === 'unlimited' || (!isAdm)) {
           expireText = 'ไม่มีวันหมดอายุ';
         }
 
-        let actionBtns = '';
-        if (isPending) {
-          actionBtns = `
-            <button class="btn btn-xs btn-success text-white" onclick="approveUser('${u.id}', '${u.name}')"><i class="fa-solid fa-check"></i> อนุมัติ</button>
-            <button class="btn btn-xs btn-error btn-outline" onclick="deleteUser('${u.id}', '${u.name}')"><i class="fa-solid fa-trash"></i></button>
-          `;
-        } else {
-          actionBtns = `
-            <button class="btn btn-xs btn-error btn-outline" onclick="deleteUser('${u.id}', '${u.name}')"><i class="fa-solid fa-trash"></i></button>
-          `;
-        }
+        let actionBtns = `
+          <button class="btn btn-xs btn-error btn-outline" onclick="deleteUser('${u.id}', '${u.name}')"><i class="fa-solid fa-trash"></i></button>
+        `;
 
         tb.innerHTML += `
           <tr>
@@ -577,6 +610,56 @@
             <td class="flex gap-1">${actionBtns}</td>
           </tr>
         `;
+      });
+    }
+
+    function renderApprovals() {
+      const allUsers = getUsers();
+      const pendingUsers = allUsers.filter(u => u.status === 'pending');
+      const tb = document.getElementById('approvalsTableBody');
+      tb.innerHTML = '';
+
+      if (!pendingUsers.length) {
+        tb.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-500"><i class="fa-solid fa-check-circle text-2xl text-success mb-2 block"></i> ไม่มีคำขออนุมัติค้างอยู่</td></tr>`;
+        return;
+      }
+
+      pendingUsers.forEach(u => {
+        tb.innerHTML += `
+          <tr>
+            <td>
+              <div class="font-medium">${u.name}</div>
+            </td>
+            <td>
+              <div class="font-mono text-xs text-slate-600">${u.studentId}</div>
+            </td>
+            <td><div class="text-xs text-slate-500">${u.occupation || '-'}</div></td>
+            <td class="flex gap-2">
+              <button class="btn btn-sm btn-success text-white" onclick="approveUser('${u.id}', '${u.name}')"><i class="fa-solid fa-check"></i> อนุมัติ</button>
+              <button class="btn btn-sm btn-error btn-outline" onclick="rejectUser('${u.id}', '${u.name}')"><i class="fa-solid fa-xmark"></i> ปฏิเสธ</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function rejectUser(id, name) {
+      Swal.fire({
+        title: 'ปฏิเสธคำขอ?',
+        text: `คุณต้องการปฏิเสธคำขอของ ${name} ใช่หรือไม่? บัญชีนี้จะถูกลบ`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c'
+      }).then(r => {
+        if (r.isConfirmed) {
+          const u = getUsers().filter(x => x.id !== id);
+          localStorage.setItem('plc_users', JSON.stringify(u));
+          fbWrite('plc_users', u);
+          renderApprovals();
+          renderOverview();
+          updatePendingBadge();
+          Swal.fire({ icon: 'success', title: 'ปฏิเสธและลบบัญชีแล้ว', timer: 1500, showConfirmButton: false });
+        }
       });
     }
 
@@ -614,7 +697,9 @@
           user.expireAt = expireAt;
           localStorage.setItem('plc_users', JSON.stringify(users));
           fbWrite('plc_users/' + id, user);
+          renderApprovals();
           renderUsers();
+          updatePendingBadge();
           Swal.fire({ icon: 'success', title: 'อนุมัติสำเร็จ', showConfirmButton: false, timer: 1500 });
         }
       }
@@ -688,6 +773,7 @@
         renderOverview();
         Swal.fire({ icon: 'success', title: 'สร้างผู้ใช้สำเร็จ', showConfirmButton: false, timer: 1500 });
       }
+    }
 
     function deleteUser(id, name) {
       if (id === user.id) return Swal.fire('ลบไม่ได้', 'คุณไม่สามารถลบบัญชีตัวเองที่กำลังใช้งานอยู่ได้', 'error');
@@ -1255,6 +1341,7 @@
     }
 
     // Init
+    updatePendingBadge();
     showTab('overview');
     
   </script>
