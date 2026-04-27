@@ -74,6 +74,20 @@ function logout() {
 function requireAuth() {
   const user = getCurrentUser();
   if (!user) { window.location.href = 'index.html'; return null; }
+  
+  if (user.expireAt && user.expireAt !== 'unlimited') {
+    if (Date.now() > user.expireAt) {
+      // ลบบัญชีผู้ใช้ที่หมดอายุ
+      let users = getUsers();
+      users = users.filter(u => u.id !== user.id);
+      saveUsers(users);
+      sessionStorage.removeItem('plc_current_user');
+      alert('เซสชันหมดอายุ: บัญชีของคุณหมดเวลาการใช้งานและถูกลบออกจากระบบแล้ว');
+      window.location.href = 'index.html';
+      return null;
+    }
+  }
+  
   return user;
 }
 

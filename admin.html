@@ -116,6 +116,7 @@
       <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
         <h2 class="text-2xl font-bold text-primary flex items-center gap-2"><i class="fa-solid fa-users text-secondary"></i> จัดการผู้ใช้</h2>
         <div class="flex gap-2">
+          <button class="btn btn-sm btn-primary" onclick="showCreateUserModal()"><i class="fa-solid fa-user-plus"></i> สร้างผู้ใช้ใหม่</button>
           <button class="btn btn-sm btn-outline btn-error bg-white" onclick="resetAllUsers()"><i class="fa-solid fa-trash-can"></i> ล้างข้อมูลทั้งหมด</button>
         </div>
       </div>
@@ -141,9 +142,9 @@
               <tr>
                 <th>ชื่อ-นามสกุล</th>
                 <th>รหัสผู้ใช้</th>
-                <th>รหัสผ่าน</th>
-                <th>ประเภท</th>
                 <th>สิทธิ์</th>
+                <th>สถานะ</th>
+                <th>หมดอายุ</th>
                 <th>จัดการ</th>
               </tr>
             </thead>
@@ -533,20 +534,160 @@
 
       filtered.forEach(u => {
         const isAdm = u.role === 'admin';
+        const isPending = u.status === 'pending';
+        let statusBadge = isPending ? '<div class="badge badge-warning badge-sm">รออนุมัติ</div>' : '<div class="badge badge-success text-white badge-sm">ใช้งานได้</div>';
+        
+        let expireText = '-';
+        if (u.expireAt && u.expireAt !== 'unlimited') {
+          if (Date.now() > u.expireAt) {
+             expireText = '<span class="text-error font-bold">หมดอายุแล้ว</span>';
+             statusBadge = '<div class="badge badge-error text-white badge-sm">หมดอายุ</div>';
+          } else {
+             expireText = new Date(u.expireAt).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
+          }
+        } else if (u.expireAt === 'unlimited' || (!isPending && !isAdm)) {
+          expireText = 'ไม่มีวันหมดอายุ';
+        }
+
+        let actionBtns = '';
+        if (isPending) {
+          actionBtns = `
+            <button class="btn btn-xs btn-success text-white" onclick="approveUser('${u.id}', '${u.name}')"><i class="fa-solid fa-check"></i> อนุมัติ</button>
+            <button class="btn btn-xs btn-error btn-outline" onclick="deleteUser('${u.id}', '${u.name}')"><i class="fa-solid fa-trash"></i></button>
+          `;
+        } else {
+          actionBtns = `
+            <button class="btn btn-xs btn-error btn-outline" onclick="deleteUser('${u.id}', '${u.name}')"><i class="fa-solid fa-trash"></i></button>
+          `;
+        }
+
         tb.innerHTML += `
           <tr>
-            <td class="font-medium">${u.name}</td>
-            <td class="font-mono text-xs">${u.studentId}</td>
-            <td class="font-mono text-xs text-slate-400">••••</td>
-            <td>${u.occupation || '-'}</td>
-            <td>${isAdm ? '<div class="badge badge-warning text-white badge-sm">ผู้ดูแลระบบ</div>' : '<div class="badge badge-info text-white badge-sm">นักศึกษา</div>'}</td>
             <td>
-              <button class="btn btn-xs btn-error btn-outline" onclick="deleteUser('${u.id}', '${u.name}')"><i class="fa-solid fa-trash"></i></button>
+              <div class="font-medium">${u.name}</div>
+              <div class="text-xs text-slate-400">รหัสผ่าน: ••••</div>
             </td>
+            <td>
+              <div class="font-mono text-xs">${u.studentId}</div>
+              <div class="text-xs text-slate-500">${u.occupation || '-'}</div>
+            </td>
+            <td>${isAdm ? '<div class="badge badge-secondary text-white badge-sm">ผู้ดูแลระบบ</div>' : '<div class="badge badge-info text-white badge-sm">นักศึกษา</div>'}</td>
+            <td>${statusBadge}</td>
+            <td class="text-xs text-slate-500">${expireText}</td>
+            <td class="flex gap-1">${actionBtns}</td>
           </tr>
         `;
       });
     }
+
+    async function approveUser(id, name) {
+      const { value: expireOption } = await Swal.fire({
+        title: 'อนุมัติผู้ใช้งาน',
+        html: `กำลังอนุมัติบัญชี: <b>${name}</b><br><br>กรุณากำหนดระยะเวลาการใช้งาน`,
+        input: 'select',
+        inputOptions: {
+          '1h': '1 ชั่วโมง',
+          '1d': '1 วัน',
+          '7d': '7 วัน',
+          'unlimited': 'ไม่มีวันหมดอายุ'
+        },
+        inputPlaceholder: 'เลือกระยะเวลา...',
+        showCancelButton: true,
+        confirmButtonText: 'ยืนยัน',
+        cancelButtonText: 'ยกเลิก',
+        inputValidator: (value) => {
+          if (!value) return 'กรุณาเลือกระยะเวลาการใช้งาน';
+        }
+      });
+
+      if (expireOption) {
+        let expireAt = 'unlimited';
+        const now = Date.now();
+        if (expireOption === '1h') expireAt = now + (60 * 60 * 1000);
+        else if (expireOption === '1d') expireAt = now + (24 * 60 * 60 * 1000);
+        else if (expireOption === '7d') expireAt = now + (7 * 24 * 60 * 60 * 1000);
+
+        const users = getUsers();
+        const user = users.find(u => u.id === id);
+        if (user) {
+          user.status = 'active';
+          user.expireAt = expireAt;
+          localStorage.setItem('plc_users', JSON.stringify(users));
+          fbWrite('plc_users/' + id, user);
+          renderUsers();
+          Swal.fire({ icon: 'success', title: 'อนุมัติสำเร็จ', showConfirmButton: false, timer: 1500 });
+        }
+      }
+    }
+
+    async function showCreateUserModal() {
+      const { value: formValues } = await Swal.fire({
+        title: 'สร้างผู้ใช้งานใหม่',
+        html:
+          '<input id="swal-studentId" class="swal2-input" placeholder="รหัสผู้ใช้" style="font-size:14px;">' +
+          '<input id="swal-name" class="swal2-input" placeholder="ชื่อ-นามสกุล" style="font-size:14px;">' +
+          '<input id="swal-password" class="swal2-input" type="password" placeholder="รหัสผ่าน" style="font-size:14px;">' +
+          '<select id="swal-role" class="swal2-select" style="font-size:14px;">' +
+            '<option value="student">นักศึกษา / ผู้เข้าสอบ</option>' +
+            '<option value="admin">ผู้ดูแลระบบ (Admin)</option>' +
+          '</select>' +
+          '<select id="swal-expire" class="swal2-select" style="font-size:14px;">' +
+            '<option value="" disabled selected>เลือกระยะเวลาการใช้งาน...</option>' +
+            '<option value="1h">1 ชั่วโมง</option>' +
+            '<option value="1d">1 วัน</option>' +
+            '<option value="7d">7 วัน</option>' +
+            '<option value="unlimited">ไม่มีวันหมดอายุ</option>' +
+          '</select>',
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'บันทึก',
+        cancelButtonText: 'ยกเลิก',
+        preConfirm: () => {
+          const studentId = document.getElementById('swal-studentId').value.trim();
+          const name = document.getElementById('swal-name').value.trim();
+          const password = document.getElementById('swal-password').value;
+          const role = document.getElementById('swal-role').value;
+          const expire = document.getElementById('swal-expire').value;
+          
+          if (!studentId || !name || !password || !expire) {
+            Swal.showValidationMessage('กรุณากรอกข้อมูลให้ครบถ้วน');
+            return false;
+          }
+          return { studentId, name, password, role, expire };
+        }
+      });
+
+      if (formValues) {
+        const users = getUsers();
+        if (users.find(u => u.studentId === formValues.studentId)) {
+          return Swal.fire('รหัสผู้ใช้ซ้ำ', 'รหัสผู้ใช้นี้มีอยู่ในระบบแล้ว', 'error');
+        }
+
+        let expireAt = 'unlimited';
+        const now = Date.now();
+        if (formValues.expire === '1h') expireAt = now + (60 * 60 * 1000);
+        else if (formValues.expire === '1d') expireAt = now + (24 * 60 * 60 * 1000);
+        else if (formValues.expire === '7d') expireAt = now + (7 * 24 * 60 * 60 * 1000);
+
+        const newUser = {
+          id: 'u_' + Date.now(),
+          studentId: formValues.studentId,
+          name: formValues.name,
+          password: formValues.password,
+          role: formValues.role,
+          occupation: 'สร้างโดย Admin',
+          status: 'active',
+          expireAt: expireAt
+        };
+
+        users.unshift(newUser); // Add to top
+        localStorage.setItem('plc_users', JSON.stringify(users));
+        fbWrite('plc_users/' + newUser.id, newUser);
+        
+        renderUsers();
+        renderOverview();
+        Swal.fire({ icon: 'success', title: 'สร้างผู้ใช้สำเร็จ', showConfirmButton: false, timer: 1500 });
+      }
 
     function deleteUser(id, name) {
       if (id === user.id) return Swal.fire('ลบไม่ได้', 'คุณไม่สามารถลบบัญชีตัวเองที่กำลังใช้งานอยู่ได้', 'error');

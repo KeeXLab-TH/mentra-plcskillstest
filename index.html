@@ -231,6 +231,23 @@
       const users = getUsers();
       const user = users.find(u => u.studentId === sid && u.password === pwd);
       if (user) {
+        // ตรวจสอบสถานะการอนุมัติ
+        if (user.status === 'pending') {
+          hideLoading();
+          return Swal.fire({ icon: 'warning', title: 'รอการอนุมัติ', text: 'บัญชีของคุณกำลังรอการอนุมัติจากผู้ดูแลระบบ' });
+        }
+        // ตรวจสอบการหมดอายุ
+        if (user.expireAt && user.expireAt !== 'unlimited') {
+          if (Date.now() > user.expireAt) {
+            hideLoading();
+            // ลบบัญชีผู้ใช้นี้
+            const filteredUsers = users.filter(u => u.id !== user.id);
+            localStorage.setItem('plc_users', JSON.stringify(filteredUsers));
+            fbWrite('plc_users', filteredUsers);
+            return Swal.fire({ icon: 'error', title: 'บัญชีหมดอายุ', text: 'ระยะเวลาการใช้งานของคุณหมดลงแล้ว บัญชีถูกลบออกจากระบบ' });
+          }
+        }
+
         setCurrentUser(user);
         Swal.fire({ icon: 'success', title: 'เข้าสู่ระบบสำเร็จ', text: `ยินดีต้อนรับคุณ ${user.name}`, timer: 1500, showConfirmButton: false }).then(() => {
           window.location.href = isAdmin(user) ? 'admin.html' : 'dashboard.html';
@@ -277,14 +294,15 @@
         hideLoading();
         return Swal.fire('รหัสผู้ใช้นี้มีอยู่แล้ว', 'กรุณาเลือกรหัสผู้ใช้อื่น', 'error');
       }
-      const newUser = { id: 'u_' + Date.now(), studentId, name, password, role: 'student', occupation };
+      const newUser = { id: 'u_' + Date.now(), studentId, name, password, role: 'student', occupation, status: 'pending' };
       users.push(newUser);
       localStorage.setItem('plc_users', JSON.stringify(users));
       showLoading('กำลังบันทึกข้อมูล...', 'ระบบกำลังเชื่อมต่อฐานข้อมูล');
       await Promise.race([fbWrite('plc_users/' + newUser.id, newUser), new Promise(r => setTimeout(r, 5000))]).catch(() => {});
-      setCurrentUser(newUser);
-      Swal.fire({ icon: 'success', title: 'สมัครสำเร็จ!', text: `ยินดีต้อนรับคุณ ${name}`, timer: 1500, showConfirmButton: false }).then(() => {
-        window.location.href = 'dashboard.html';
+      
+      hideLoading();
+      Swal.fire({ icon: 'success', title: 'สมัครสำเร็จ!', text: `กรุณารอผู้ดูแลระบบอนุมัติบัญชีของคุณก่อนเข้าใช้งาน`, confirmButtonColor: '#1a5276' }).then(() => {
+        showLogin();
       });
     });
   </script>
